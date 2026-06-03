@@ -110,7 +110,7 @@ export default function HomePage() {
               <Link href="/events" id="hero-cta-events" className="btn-primary">
                 Upcoming Events <ArrowRight size={16} />
               </Link>
-              <Link href="/gallery" id="hero-cta-gallery" className="btn-outline !text-white !border-white/30 hover:!border-[var(--color-heritage-gold)] hover:!bg-[var(--color-heritage-gold-glow)] hover:!text-[var(--color-heritage-gold)] font-bold">
+              <Link href="/gallery" id="hero-cta-gallery" className="btn-outline !text-white/90 !border-white/40 bg-white/5 hover:!bg-white/15 hover:!border-white/80 hover:!text-white font-bold transition-all duration-200 shadow-sm">
                 <Play size={16} /> Watch Performances
               </Link>
             </motion.div>
@@ -157,13 +157,13 @@ export default function HomePage() {
               {/* Floating Featured Event Overlay Card */}
               {featuredEvents[0] && (
                 <motion.div 
-                  className="absolute -bottom-6 -left-6 sm:-left-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 text-white max-w-xs z-20 shadow-2xl shadow-black/45"
+                  className="absolute bottom-[-30px] left-1/2 -translate-x-1/2 lg:left-[-40px] lg:translate-x-0 lg:bottom-[-20px] w-[90%] max-w-[280px] bg-[var(--color-heritage-black)]/85 backdrop-blur-xl border border-[var(--color-heritage-gold)]/30 rounded-2xl p-5 text-white z-20 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rotate-0 lg:-rotate-2 hover:lg:rotate-0 transition-transform duration-300"
                   initial={{ opacity: 0, x: -20, y: 20 }}
                   animate={{ opacity: 1, x: 0, y: 0 }}
-                  transition={{ delay: 0.8, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{ delay: 0.8, duration: 0.8, ease: [0.16, 1, 0.3, 1] as const }}
                 >
-                  <span className="badge badge-gold mb-3 text-[9px] font-bold">Featured Event</span>
-                  <h3 className="font-display text-base font-bold mb-2 line-clamp-1">{featuredEvents[0].title}</h3>
+                  <span className="badge badge-gold mb-3 text-[9px] font-bold bg-[var(--color-heritage-gold)]/25 text-[var(--color-heritage-gold-light)] border-[var(--color-heritage-gold)]/30">Featured Event</span>
+                  <h3 className="font-display text-base font-bold mb-2 line-clamp-1 text-white">{featuredEvents[0].title}</h3>
                   <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1">
                     <Calendar size={11} className="text-[var(--color-heritage-gold)]" />
                     <span>{formatDate(featuredEvents[0].date)}</span>
