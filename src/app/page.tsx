@@ -59,20 +59,7 @@ export default function HomePage() {
       {/* ════════════════════════════════════════════════
           HERO
       ════════════════════════════════════════════════ */}
-      <section id="hero" className="relative min-h-[95vh] flex items-center overflow-hidden mesh-gradient py-20 lg:py-0">
-        {/* Background image & overlays */}
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="/images/WhatsApp Image 2026-06-02 at 16.38.11.jpeg"
-            alt="Volta Heritage Dance Ensemble background"
-            fill
-            className="object-cover object-center opacity-25 filter blur-[3px]"
-            priority
-          />
-          {/* Dark cinematic gradients */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[rgba(28,18,8,0.92)] via-[rgba(28,18,8,0.75)] to-[rgba(28,18,8,0.40)]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[rgba(28,18,8,0.85)] via-transparent to-transparent" />
-        </div>
+      <section id="hero" className="relative min-h-[95vh] flex items-center overflow-hidden bg-[#1c1400] py-20 lg:py-0">
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 grid lg:grid-cols-12 gap-12 items-center w-full">
           {/* Left Column: Animated Text Content */}
@@ -110,74 +97,92 @@ export default function HomePage() {
               <Link href="/events" id="hero-cta-events" className="btn-primary">
                 Upcoming Events <ArrowRight size={16} />
               </Link>
-              <Link href="/gallery" id="hero-cta-gallery" className="btn-outline !text-white/90 !border-white/40 bg-white/5 hover:!bg-white/15 hover:!border-white/80 hover:!text-white font-bold transition-all duration-200 shadow-sm">
+              <Link href="/gallery" id="hero-cta-gallery" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-white border border-[rgba(255,255,255,0.25)] bg-white/5 hover:bg-white/15 hover:border-white/50 transition-all duration-200 text-sm">
                 <Play size={16} /> Watch Performances
               </Link>
             </motion.div>
 
             {/* Stats strip */}
-            <motion.div className="mt-12 flex flex-wrap gap-8" variants={heroItemVariants}>
-              {[
-                { value: "20+", label: "Years of Service" },
-                { value: "8+", label: "Countries Performed" },
-                { value: "24", label: "Ensemble Members" },
-              ].map((stat) => (
-                <div key={stat.label} className="border-l border-white/10 pl-4 first:border-0 first:pl-0">
-                  <p className="font-display text-3xl font-black text-[var(--color-heritage-gold)]">{stat.value}</p>
-                  <p className="text-xs text-white/50 mt-0.5 uppercase tracking-wider font-bold">{stat.label}</p>
-                </div>
-              ))}
+            <motion.div className="mt-12" variants={heroItemVariants}>
+              <div className="border-t border-[rgba(200,149,26,0.2)] pt-6 flex flex-wrap gap-0">
+                {[
+                  { value: "20+", label: "Years of Service" },
+                  { value: "8+", label: "Countries Performed" },
+                  { value: "24", label: "Ensemble Members" },
+                ].map((stat, i) => (
+                  <div key={stat.label} className={`pr-8 ${i > 0 ? "pl-8 border-l border-[rgba(200,149,26,0.2)]" : ""}`}>
+                    <p className="font-display text-3xl font-black text-[var(--color-heritage-gold)]">{stat.value}</p>
+                    <p className="text-xs text-white/50 mt-0.5 uppercase tracking-wider font-bold">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
             </motion.div>
           </motion.div>
 
-          {/* Right Column: Circular Image Frame + Bolder Rotating Gold Border + Floating Event Card */}
-          <div className="lg:col-span-5 flex items-center justify-center lg:justify-end relative">
-            <motion.div 
-              className="relative w-[350px] h-[350px] sm:w-[420px] sm:h-[420px] lg:w-[480px] lg:h-[480px] flex items-center justify-center"
+          {/* Right Column: Circle + Event Card */}
+          <div className="lg:col-span-5 flex flex-col items-center lg:items-end gap-6 lg:gap-0">
+            {/* Circle wrapper — carries the ring, image, breakout */}
+            <motion.div
+              className="relative w-[320px] h-[320px] sm:w-[400px] sm:h-[400px] lg:w-[460px] lg:h-[460px] flex items-center justify-center flex-shrink-0"
               variants={heroImageVariants}
               initial="hidden"
               animate="visible"
             >
-              {/* Premium Rotating Gold Border */}
-              <div className="absolute inset-0 rounded-full rotating-gold-ring opacity-95 p-[8px] shadow-[0_25px_60px_rgba(0,0,0,0.65)]">
-                <div className="w-full h-full rounded-full bg-[var(--color-heritage-black)]" />
+              {/* Outer green ring — sits outside the rotating gold ring */}
+              <div
+                className="absolute inset-0 rounded-full pointer-events-none"
+                style={{
+                  boxShadow: "0 0 0 3px #1c1400, 0 0 0 5px #006400",
+                  zIndex: 30,
+                }}
+              />
+
+              {/* Rotating gold border */}
+              <div className="absolute inset-0 rounded-full rotating-gold-ring p-[7px] shadow-[0_25px_60px_rgba(0,0,0,0.65)]">
+                <div className="w-full h-full rounded-full bg-[#1c1400]" />
               </div>
 
-              {/* Inner Circle Image */}
-              <div className="w-[calc(100%-20px)] h-[calc(100%-20px)] rounded-full overflow-hidden border-[6px] border-[var(--color-heritage-black)] relative z-10">
+              {/* Circle image */}
+              <div className="w-[calc(100%-18px)] h-[calc(100%-18px)] rounded-full overflow-hidden border-[5px] border-[#1c1400] relative z-10">
                 <Image
                   src="/images/WhatsApp Image 2026-06-02 at 16.38.10.jpeg"
                   alt="Volta Heritage Dance Ensemble stage performance"
                   fill
-                  className="object-cover object-center brightness-[1.08] contrast-[1.02] scale-[1.05] group-hover:scale-110 transition-transform duration-700"
+                  className="object-cover object-top brightness-[1.08] contrast-[1.02] scale-[1.05] transition-transform duration-700"
                   priority
                 />
               </div>
 
-              {/* Floating Featured Event Overlay Card */}
-              {featuredEvents[0] && (
-                <motion.div 
-                  className="absolute bottom-[-30px] left-1/2 -translate-x-1/2 lg:left-[-30px] lg:translate-x-0 lg:bottom-[-15px] w-[90%] max-w-[280px] bg-[var(--color-heritage-black)]/90 backdrop-blur-xl border border-[var(--color-heritage-gold)]/40 rounded-2xl p-5 text-white z-20 shadow-[0_20px_50px_rgba(0,0,0,0.6)] rotate-0 lg:-rotate-2 hover:lg:rotate-0 transition-transform duration-300"
-                  initial={{ opacity: 0, x: -20, y: 20 }}
-                  animate={{ opacity: 1, x: 0, y: 0 }}
-                  transition={{ delay: 0.8, duration: 0.8, ease: [0.16, 1, 0.3, 1] as const }}
-                >
-                  <span className="badge badge-gold mb-3 text-[9px] font-bold bg-[var(--color-heritage-gold)]/20 text-[var(--color-heritage-gold-light)] border-[var(--color-heritage-gold)]/30">Featured Event</span>
-                  <h3 className="font-display text-base font-bold mb-2 line-clamp-1 text-white">{featuredEvents[0].title}</h3>
-                  <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1">
-                    <Calendar size={11} className="text-[var(--color-heritage-gold)]" />
-                    <span>{formatDate(featuredEvents[0].date)}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-white/70 mb-3">
-                    <MapPin size={11} className="text-[var(--color-heritage-gold)]" />
-                    <span className="line-clamp-1">{featuredEvents[0].venue}</span>
-                  </div>
-                  <Link href="/events" className="btn-primary btn-sm w-full py-2 justify-center text-xs font-bold">
-                    Learn More
-                  </Link>
-                </motion.div>
-              )}
+              {/* Breakout mask — hides bottom of circle so subject steps out */}
+              <div
+                className="absolute bottom-[-2px] left-0 right-0 z-20 pointer-events-none"
+                style={{ height: "18%", background: "#1c1400" }}
+              />
             </motion.div>
+
+            {/* Featured Event Card — below circle on mobile, offset bottom-left on desktop */}
+            {featuredEvents[0] && (
+              <motion.div
+                className="w-full max-w-[260px] lg:max-w-[240px] lg:-mt-8 lg:self-start lg:ml-4 bg-[#120d00] backdrop-blur-xl border border-[var(--color-heritage-gold)]/40 rounded-2xl p-4 text-white shadow-[0_20px_50px_rgba(0,0,0,0.7)] lg:-rotate-1 hover:rotate-0 transition-transform duration-300 z-30"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9, duration: 0.8, ease: [0.16, 1, 0.3, 1] as const }}
+              >
+                <span className="badge badge-gold mb-2 text-[9px] font-bold bg-[var(--color-heritage-gold)]/20 text-[var(--color-heritage-gold-light)] border-[var(--color-heritage-gold)]/30">Featured Event</span>
+                <h3 className="font-display text-sm font-bold mb-2 line-clamp-2 text-white leading-snug">{featuredEvents[0].title}</h3>
+                <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1">
+                  <Calendar size={10} className="text-[var(--color-heritage-gold)]" />
+                  <span>{formatDate(featuredEvents[0].date)}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-white/70 mb-3">
+                  <MapPin size={10} className="text-[var(--color-heritage-gold)]" />
+                  <span className="line-clamp-1">{featuredEvents[0].venue}</span>
+                </div>
+                <Link href="/events" className="btn-primary btn-sm w-full py-1.5 justify-center text-xs font-bold">
+                  Learn More
+                </Link>
+              </motion.div>
+            )}
           </div>
         </div>
 

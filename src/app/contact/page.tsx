@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Mail, Phone, Send, CheckCircle, ShieldCheck, Star } from "lucide-react";
 import { institution } from "@/lib/data";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
@@ -49,6 +49,12 @@ export default function ContactPage() {
     subject: "",
     message: "",
     enquiryType: "performance",
+    eventDate: "",
+    venueLocation: "",
+    audienceSize: "100-500",
+    participantCount: "",
+    targetAge: "mixed",
+    groupSize: "",
   });
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
@@ -227,7 +233,20 @@ export default function ContactPage() {
                 <button
                   onClick={() => { 
                     setSubmitted(false); 
-                    setForm({ name: "", email: "", phone: "", subject: "", message: "", enquiryType: "performance" }); 
+                    setForm({
+                      name: "",
+                      email: "",
+                      phone: "",
+                      subject: "",
+                      message: "",
+                      enquiryType: "performance",
+                      eventDate: "",
+                      venueLocation: "",
+                      audienceSize: "100-500",
+                      participantCount: "",
+                      targetAge: "mixed",
+                      groupSize: "",
+                    }); 
                   }}
                   className="btn-outline btn-sm font-bold"
                 >
@@ -305,6 +324,156 @@ export default function ContactPage() {
                     </select>
                   </motion.div>
                 </div>
+
+                {/* Dynamic Funnel Fields */}
+                <AnimatePresence mode="wait">
+                  {form.enquiryType === "performance" && (
+                    <motion.div
+                      key="funnel-performance"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)]">
+                        <div>
+                          <label htmlFor="contact-event-date" className="form-label text-xs">Event Date *</label>
+                          <input
+                            id="contact-event-date"
+                            name="eventDate"
+                            type="date"
+                            required={form.enquiryType === "performance"}
+                            className="form-input text-xs"
+                            value={form.eventDate}
+                            onChange={handleChange}
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="contact-venue" className="form-label text-xs">Venue Location *</label>
+                          <input
+                            id="contact-venue"
+                            name="venueLocation"
+                            type="text"
+                            required={form.enquiryType === "performance"}
+                            className="form-input text-xs"
+                            placeholder="e.g. Ho Cultural Centre"
+                            value={form.venueLocation}
+                            onChange={handleChange}
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="contact-audience" className="form-label text-xs">Expected Audience *</label>
+                          <select
+                            id="contact-audience"
+                            name="audienceSize"
+                            className="form-input text-xs"
+                            value={form.audienceSize}
+                            onChange={handleChange}
+                          >
+                            <option value="under-100">Under 100 people</option>
+                            <option value="100-500">100 - 500 people</option>
+                            <option value="500-1000">500 - 1,000 people</option>
+                            <option value="1000+">1,000+ people</option>
+                          </select>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {(form.enquiryType === "workshop" || form.enquiryType === "school") && (
+                    <motion.div
+                      key="funnel-education"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)]">
+                        <div>
+                          <label htmlFor="contact-workshop-date" className="form-label text-xs">Preferred Date *</label>
+                          <input
+                            id="contact-workshop-date"
+                            name="eventDate"
+                            type="date"
+                            required={form.enquiryType === "workshop" || form.enquiryType === "school"}
+                            className="form-input text-xs"
+                            value={form.eventDate}
+                            onChange={handleChange}
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="contact-participants" className="form-label text-xs">Expected Attendees *</label>
+                          <input
+                            id="contact-participants"
+                            name="participantCount"
+                            type="number"
+                            required={form.enquiryType === "workshop" || form.enquiryType === "school"}
+                            className="form-input text-xs"
+                            placeholder="e.g. 40"
+                            value={form.participantCount}
+                            onChange={handleChange}
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="contact-age" className="form-label text-xs">Target Age Group *</label>
+                          <select
+                            id="contact-age"
+                            name="targetAge"
+                            className="form-input text-xs"
+                            value={form.targetAge}
+                            onChange={handleChange}
+                          >
+                            <option value="kids">Children (under 12)</option>
+                            <option value="teens">Teens (13 - 18)</option>
+                            <option value="adults">Adults (18+)</option>
+                            <option value="mixed">Mixed Age Groups</option>
+                          </select>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {form.enquiryType === "tourism" && (
+                    <motion.div
+                      key="funnel-tourism"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)]">
+                        <div>
+                          <label htmlFor="contact-tour-date" className="form-label text-xs">Preferred Tour Date *</label>
+                          <input
+                            id="contact-tour-date"
+                            name="eventDate"
+                            type="date"
+                            required={form.enquiryType === "tourism"}
+                            className="form-input text-xs"
+                            value={form.eventDate}
+                            onChange={handleChange}
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="contact-group-size" className="form-label text-xs">Group Size *</label>
+                          <input
+                            id="contact-group-size"
+                            name="groupSize"
+                            type="number"
+                            required={form.enquiryType === "tourism"}
+                            className="form-input text-xs"
+                            placeholder="e.g. 5"
+                            value={form.groupSize}
+                            onChange={handleChange}
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 <motion.div variants={inputVariants}>
                   <label htmlFor="contact-subject" className="form-label">Subject *</label>
