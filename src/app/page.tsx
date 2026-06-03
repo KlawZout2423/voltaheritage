@@ -130,9 +130,18 @@ export default function HomePage() {
               </Link>
             </motion.div>
 
-            {/* Stats Section */}
+            {/* Credibility Badge */}
             <motion.div 
-              className="w-full border-t border-[rgba(200,149,26,0.15)] pt-6 pb-2"
+              className="mb-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-heritage-gold)]/10 border border-[var(--color-heritage-gold)]/25 text-[10px] font-black uppercase tracking-widest text-[var(--color-heritage-gold)]"
+              variants={heroItemVariants}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-heritage-gold)] animate-pulse" />
+              Recognized Cultural Ambassadors of the Volta Region
+            </motion.div>
+
+            {/* Stats Section with breathing room */}
+            <motion.div 
+              className="w-full border-y border-[rgba(200,149,26,0.15)] py-8 my-8"
               variants={heroItemVariants}
             >
               <div className="flex flex-wrap gap-y-6">
@@ -143,8 +152,8 @@ export default function HomePage() {
                 ].map((stat, i) => (
                   <div 
                     key={stat.label} 
-                    className={`flex flex-col items-start pr-6 ${
-                      i > 0 ? "pl-6 border-l border-[rgba(200,149,26,0.15)]" : ""
+                    className={`flex flex-col items-start pr-8 ${
+                      i > 0 ? "pl-8 border-l border-[rgba(200,149,26,0.15)]" : ""
                     }`}
                   >
                     <p className="font-display text-3xl md:text-4xl font-black text-[var(--color-heritage-gold)] mb-0.5">
@@ -158,19 +167,28 @@ export default function HomePage() {
               </div>
             </motion.div>
 
-            {/* Social Proof Line */}
-            <motion.p 
-              className="text-[10px] md:text-xs text-white/40 tracking-wider font-bold max-w-xl leading-relaxed border-t border-[rgba(200,149,26,0.15)] pt-4 mt-2 w-full text-left"
+            {/* Social Proof Badges */}
+            <motion.div 
+              className="flex flex-wrap items-center gap-x-6 gap-y-3 w-full"
               variants={heroItemVariants}
             >
-              Featured at National Festivals, Cultural Exhibitions, Educational Institutions & International Events
-            </motion.p>
+              <span className="text-[10px] uppercase tracking-widest font-black text-white/40">Featured at:</span>
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/80">
+                <span className="text-sm">🏛</span> National Festivals
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/80">
+                <span className="text-sm">🎓</span> Educational Institutions
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/80">
+                <span className="text-sm">🌍</span> International Cultural Events
+              </span>
+            </motion.div>
           </motion.div>
 
-          {/* Right Column: Large centered image container */}
+          {/* Right Column: Large centered image container with float and zoom */}
           <div className="lg:col-span-5 flex flex-col items-center lg:items-end w-full">
             <motion.div 
-              className="relative w-[300px] h-[300px] sm:w-[380px] sm:h-[380px] lg:w-[440px] lg:h-[440px] flex items-center justify-center flex-shrink-0"
+              className="relative w-[320px] h-[320px] sm:w-[420px] sm:h-[420px] lg:w-[500px] lg:h-[500px] flex items-center justify-center flex-shrink-0 animate-float"
               variants={heroImageVariants}
               initial="hidden"
               animate="visible"
@@ -179,14 +197,14 @@ export default function HomePage() {
               <div className="absolute w-[120%] h-[120%] rounded-full bg-[radial-gradient(circle,rgba(200,135,10,0.22)_0%,transparent_70%)] blur-3xl pointer-events-none z-0" />
 
               {/* SVG Tribal & Adinkra patterns */}
-              <svg className="absolute w-[130%] h-[130%] -top-[15%] -left-[15%] text-[var(--color-heritage-gold)]/10 pointer-events-none z-0" viewBox="0 0 500 500" fill="none">
-                <circle cx="250" cy="250" r="220" stroke="currentColor" strokeWidth="1.5" strokeDasharray="8 8" className="animate-[spin_120s_linear_infinite]" />
-                <circle cx="250" cy="250" r="180" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" className="animate-[spin_90s_linear_infinite_reverse]" />
+              <svg className="absolute w-[130%] h-[130%] -top-[15%] -left-[15%] text-[var(--color-heritage-gold)]/22 pointer-events-none z-0" viewBox="0 0 500 500" fill="none">
+                <circle cx="250" cy="250" r="220" stroke="currentColor" strokeWidth="2.5" strokeDasharray="8 8" className="animate-[spin_120s_linear_infinite]" />
+                <circle cx="250" cy="250" r="180" stroke="currentColor" strokeWidth="1.8" strokeDasharray="4 4" className="animate-[spin_90s_linear_infinite_reverse]" />
                 
                 <path d="M250,15 L245,30 L255,30 Z M250,485 L245,470 L255,470 Z M15,250 L30,245 L30,255 Z M485,250 L470,245 L470,255 Z" fill="currentColor" />
                 
                 {/* Top Left - Dwennimmen */}
-                <g transform="translate(85, 85) scale(0.5)" stroke="currentColor" strokeWidth="4" fill="none">
+                <g transform="translate(85, 85) scale(0.5)" stroke="currentColor" strokeWidth="5.5" fill="none">
                   <path d="M 20,50 C 5,50 5,20 20,20 C 35,20 35,50 20,50 Z" />
                   <path d="M 80,50 C 95,50 95,20 80,20 C 65,20 65,50 80,50 Z" />
                   <path d="M 50,20 L 50,80" />
@@ -194,7 +212,7 @@ export default function HomePage() {
                 </g>
                 
                 {/* Top Right - Gye Nyame */}
-                <g transform="translate(365, 85) scale(0.5)" stroke="currentColor" strokeWidth="4" fill="none">
+                <g transform="translate(365, 85) scale(0.5)" stroke="currentColor" strokeWidth="5.5" fill="none">
                   <circle cx="50" cy="50" r="15" />
                   <path d="M 50,15 C 20,15 15,40 15,50 C 15,60 20,85 50,85" />
                   <path d="M 50,15 C 80,15 85,40 85,50 C 85,60 80,85 50,85" />
@@ -203,7 +221,7 @@ export default function HomePage() {
                 </g>
 
                 {/* Bottom Left - Mate Masie */}
-                <g transform="translate(85, 365) scale(0.5)" stroke="currentColor" strokeWidth="4" fill="none">
+                <g transform="translate(85, 365) scale(0.5)" stroke="currentColor" strokeWidth="5.5" fill="none">
                   <rect x="25" y="25" width="50" height="50" rx="10" />
                   <circle cx="50" cy="50" r="10" />
                   <line x1="50" y1="25" x2="50" y2="75" />
@@ -211,10 +229,10 @@ export default function HomePage() {
                 </g>
 
                 {/* Bottom Right - Asase Yaa */}
-                <g transform="translate(365, 365) scale(0.5)" stroke="currentColor" strokeWidth="4" fill="none">
+                <g transform="translate(365, 365) scale(0.5)" stroke="currentColor" strokeWidth="5.5" fill="none">
                   <circle cx="50" cy="50" r="30" />
                   <path d="M 20,50 L 80,50 M 50,20 L 50,80" />
-                  <circle cx="50" cy="50" r="15" fill="currentColor" opacity="0.2" />
+                  <circle cx="50" cy="50" r="15" fill="currentColor" opacity="0.25" />
                 </g>
               </svg>
 
