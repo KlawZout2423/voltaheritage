@@ -103,6 +103,15 @@ h1, h2, h3, h4, h5, h6 {
   animation: rotate-ring 12s linear infinite;
 }
 
+@keyframes map-glow {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.85; }
+}
+
+.map-glow-pulse-slow {
+  animation: map-glow 4s ease-in-out infinite;
+}
+
 
 /* ════════════════════════════════════════
    KENTE ACCENT — Cultural Signature

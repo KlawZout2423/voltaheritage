@@ -138,6 +138,10 @@ export default function HomePage() {
               initial="hidden"
               animate="visible"
             >
+              {/* Ambient glow layers behind map */}
+              <div className="absolute inset-[-6px] z-[-1] map-glow-pulse-slow" style={{ filter: "blur(18px)", background: "radial-gradient(ellipse at 50% 55%, rgba(200,135,10,0.45) 0%, rgba(185,28,28,0.3) 45%, rgba(22,101,52,0.2) 75%, transparent 100%)" }} />
+              <div className="absolute inset-[-2px] z-[-1]" style={{ filter: "blur(6px)", background: "radial-gradient(ellipse at 50% 50%, rgba(200,135,10,0.2) 0%, transparent 70%)" }} />
+
               {/* Africa Map Background Outline with Pan-African Gradient Border */}
               <svg viewBox="0 0 109.39 122.88" className="absolute inset-0 w-full h-full z-0 pointer-events-none overflow-visible">
                 <defs>
