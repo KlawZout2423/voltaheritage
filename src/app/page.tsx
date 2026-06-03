@@ -130,15 +130,6 @@ export default function HomePage() {
               </Link>
             </motion.div>
 
-            {/* Credibility Badge */}
-            <motion.div 
-              className="mb-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-heritage-gold)]/10 border border-[var(--color-heritage-gold)]/25 text-[10px] font-black uppercase tracking-widest text-[var(--color-heritage-gold)]"
-              variants={heroItemVariants}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-heritage-gold)] animate-pulse" />
-              Recognized Cultural Ambassadors of the Volta Region
-            </motion.div>
-
             {/* Stats Section with breathing room */}
             <motion.div 
               className="w-full border-y border-[rgba(200,149,26,0.15)] py-8 my-8"
