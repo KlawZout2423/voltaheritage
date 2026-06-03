@@ -103,6 +103,11 @@ h1, h2, h3, h4, h5, h6 {
   animation: rotate-ring 12s linear infinite;
 }
 
+.rotating-gold-ring {
+  background: linear-gradient(0deg, var(--color-heritage-gold-dark), var(--color-heritage-gold), var(--color-heritage-gold-light), var(--color-heritage-gold-dark));
+  animation: rotate-ring 10s linear infinite;
+}
+
 @keyframes map-glow {
   0%, 100% { opacity: 0.5; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.06); }
