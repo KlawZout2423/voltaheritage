@@ -78,10 +78,7 @@ export default function HomePage() {
   return (
     <div className="bg-[var(--color-bg-secondary)] overflow-x-hidden">
 
-      {/* ════════════════════════════════════════════════
-          HERO
-      ════════════════════════════════════════════════ */}
-      <section id="hero" className="relative min-h-[95vh] flex items-center overflow-hidden bg-[#1c1400] py-20 lg:py-0">
+      <section id="hero" className="relative min-h-[95vh] flex items-center overflow-visible lg:overflow-hidden bg-[#1c1400] py-20 lg:py-0 pb-32 lg:pb-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(200,135,10,0.08)_0%,transparent_75%)] pointer-events-none" />
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 grid lg:grid-cols-12 gap-12 items-center w-full">
@@ -108,7 +105,7 @@ export default function HomePage() {
 
             {/* Subtitle / Paragraph */}
             <motion.p 
-              className="text-base sm:text-lg md:text-xl text-white/75 leading-relaxed mb-8 max-w-xl font-light text-left"
+              className="text-base sm:text-lg md:text-xl text-white/75 leading-relaxed mb-6 max-w-xl font-light text-left"
               variants={heroItemVariants}
             >
               Volta Heritage Dance Ensemble preserves and shares Ewe cultural traditions through authentic dance, drumming, storytelling, and education.
@@ -116,26 +113,23 @@ export default function HomePage() {
 
             {/* CTAs */}
             <motion.div 
-              className="flex flex-wrap items-center gap-6 mb-12"
+              className="flex flex-wrap items-center gap-6 mb-6"
               variants={heroItemVariants}
             >
               <Link href="/contact" id="hero-cta-book" className="btn-primary">
                 Book Performance <ArrowRight size={16} />
               </Link>
-              <Link href="/gallery" id="hero-cta-watch" className="inline-flex items-center gap-2 text-white/80 hover:text-[var(--color-heritage-gold)] transition-colors duration-200 text-sm font-bold group">
-                <span className="w-8 h-8 rounded-full border border-white/20 bg-white/5 flex items-center justify-center group-hover:border-[var(--color-heritage-gold)] group-hover:bg-[var(--color-heritage-gold)]/10 transition-colors">
-                  <Play size={12} className="fill-current text-white" />
-                </span>
-                Watch Performances
+              <Link href="/gallery" id="hero-cta-watch" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-white border border-white/20 bg-white/5 hover:bg-white/15 hover:border-white/40 hover:scale-[1.02] active:scale-100 transition-all duration-200 text-sm">
+                <Play size={14} className="fill-current text-white" /> Watch Performances
               </Link>
             </motion.div>
 
             {/* Stats Section with breathing room */}
             <motion.div 
-              className="w-full border-y border-[rgba(200,149,26,0.15)] py-8 my-8"
+              className="w-full border-y border-[rgba(200,149,26,0.15)] py-6 my-6"
               variants={heroItemVariants}
             >
-              <div className="flex flex-wrap gap-y-6">
+              <div className="grid grid-cols-3 w-full gap-2 sm:gap-4">
                 {[
                   { value: "20+", label: "Years Preserving Culture" },
                   { value: "8+", label: "Countries Performed In" },
@@ -143,14 +137,14 @@ export default function HomePage() {
                 ].map((stat, i) => (
                   <div 
                     key={stat.label} 
-                    className={`flex flex-col items-start pr-8 ${
-                      i > 0 ? "pl-8 border-l border-[rgba(200,149,26,0.15)]" : ""
+                    className={`flex flex-col items-start pr-4 ${
+                      i > 0 ? "pl-4 border-l border-[rgba(200,149,26,0.15)]" : ""
                     }`}
                   >
-                    <p className="font-display text-3xl md:text-4xl font-black text-[var(--color-heritage-gold)] mb-0.5">
+                    <p className="font-display text-2xl sm:text-3xl md:text-4xl font-black text-[var(--color-heritage-gold)] mb-0.5">
                       <Counter value={stat.value} />
                     </p>
-                    <p className="text-[9px] md:text-[10px] text-white/55 uppercase tracking-widest font-black max-w-[140px] leading-tight">
+                    <p className="text-[8px] sm:text-[9px] md:text-[10px] text-white/55 uppercase tracking-widest font-black leading-tight">
                       {stat.label}
                     </p>
                   </div>
@@ -160,7 +154,7 @@ export default function HomePage() {
 
             {/* Social Proof Badges */}
             <motion.div 
-              className="flex flex-wrap items-center gap-x-6 gap-y-3 w-full"
+              className="hidden sm:flex flex-wrap items-center gap-x-6 gap-y-3 w-full"
               variants={heroItemVariants}
             >
               <span className="text-[10px] uppercase tracking-widest font-black text-white/40">Featured at:</span>
@@ -179,7 +173,7 @@ export default function HomePage() {
           {/* Right Column: Large centered image container with float and zoom */}
           <div className="lg:col-span-5 flex flex-col items-center lg:items-end w-full">
             <motion.div 
-              className="relative w-[320px] h-[320px] sm:w-[420px] sm:h-[420px] lg:w-[500px] lg:h-[500px] flex items-center justify-center flex-shrink-0 animate-float"
+              className="relative w-[280px] h-[280px] sm:w-[420px] sm:h-[420px] lg:w-[500px] lg:h-[500px] flex items-center justify-center flex-shrink-0 animate-float"
               variants={heroImageVariants}
               initial="hidden"
               animate="visible"
