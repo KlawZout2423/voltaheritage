@@ -9,10 +9,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { institution } from "@/lib/data";
 
 const navLinks = [
-  { label: "Home", href: "/" },
+  { label: "Home", href: "/", tagline: "Home" },
   {
     label: "Our Roots",
     href: "/about",
+    tagline: "About Us",
     children: [
       { label: "Our Story", href: "/about#history" },
       { label: "Mission & Vision", href: "/about#mission" },
@@ -22,6 +23,7 @@ const navLinks = [
   {
     label: "Living Archive",
     href: "/heritage",
+    tagline: "Ewe Culture",
     children: [
       { label: "Traditional Dance", href: "/heritage/dance" },
       { label: "Music & Drumming", href: "/heritage/music" },
@@ -31,11 +33,11 @@ const navLinks = [
       { label: "Traditional Foods", href: "/heritage/foods" },
     ],
   },
-  { label: "In Orbit", href: "/events" },
-  { label: "Visions", href: "/gallery" },
-  { label: "Offerings", href: "/services" },
-  { label: "Blue Spotlight", href: "/news" },
-  { label: "Connect", href: "/contact" },
+  { label: "In Orbit", href: "/events", tagline: "Events" },
+  { label: "Gallery", href: "/gallery", tagline: "Gallery" },
+  { label: "Offerings", href: "/services", tagline: "Services" },
+  { label: "Blue Spotlight", href: "/news", tagline: "News" },
+  { label: "Connect", href: "/contact", tagline: "Contact" },
 ];
 
 export default function Navbar() {
@@ -124,13 +126,20 @@ export default function Navbar() {
                   >
                     <button
                       id={linkId}
-                      className={`relative flex items-center gap-1 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
+                      className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
                         isLinkActive
                           ? "text-[var(--color-heritage-gold)]"
                           : "text-[var(--color-text-secondary)] hover:text-[var(--color-heritage-gold)]"
                       }`}
                     >
-                      <span className="relative z-10">{link.label}</span>
+                      <div className="flex flex-col items-start">
+                        <span className="relative z-10 leading-tight">{link.label}</span>
+                        {link.tagline && (
+                          <span className="text-[9px] tracking-wider uppercase text-[var(--color-text-light)] font-bold relative z-10 leading-none mt-0.5 opacity-75">
+                            {link.tagline}
+                          </span>
+                        )}
+                      </div>
                       <ChevronDown
                         size={13}
                         className={`relative z-10 transition-transform duration-250 ${
@@ -140,7 +149,7 @@ export default function Navbar() {
 
                       {/* Active indicator dot */}
                       {isLinkActive && (
-                        <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[var(--color-heritage-gold)]" />
+                        <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[var(--color-heritage-gold)]" />
                       )}
                     </button>
 
@@ -180,17 +189,22 @@ export default function Navbar() {
                     href={link.href}
                     id={linkId}
                     onMouseEnter={() => setHoveredIndex(idx)}
-                    className={`relative px-3.5 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    className={`relative px-3 py-1.5 rounded-lg text-sm font-semibold transition-all flex flex-col items-start ${
                       isLinkActive
                         ? "text-[var(--color-heritage-gold)]"
                         : "text-[var(--color-text-secondary)] hover:text-[var(--color-heritage-gold)]"
                     }`}
                   >
-                    <span className="relative z-10">{link.label}</span>
+                    <span className="relative z-10 leading-tight">{link.label}</span>
+                    {link.tagline && (
+                      <span className="text-[9px] tracking-wider uppercase text-[var(--color-text-light)] font-bold relative z-10 leading-none mt-0.5 opacity-75">
+                        {link.tagline}
+                      </span>
+                    )}
 
                     {/* Active indicator dot */}
                     {isLinkActive && (
-                      <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[var(--color-heritage-gold)]" />
+                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[var(--color-heritage-gold)]" />
                     )}
                   </Link>
                 );
@@ -263,7 +277,14 @@ export default function Navbar() {
                           : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]"
                       }`}
                     >
-                      <span>{link.label}</span>
+                      <div className="flex flex-col items-start text-left">
+                        <span>{link.label}</span>
+                        {link.tagline && (
+                          <span className="text-[10px] text-[var(--color-text-light)] font-medium tracking-wide leading-none mt-0.5">
+                            {link.tagline}
+                          </span>
+                        )}
+                      </div>
                       <ChevronDown
                         size={14}
                         className={`transition-transform ${mobileExpanded === link.label ? "rotate-180" : ""}`}
@@ -296,13 +317,18 @@ export default function Navbar() {
                     key={link.label}
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className={`block px-3 py-2.5 rounded-lg text-sm font-bold transition-colors ${
+                    className={`block px-3 py-2.5 rounded-lg text-sm font-bold transition-colors flex flex-col items-start text-left ${
                       isLinkActive
                         ? "text-[var(--color-heritage-gold)] bg-[var(--color-bg-secondary)]"
                         : "text-[var(--color-text-secondary)] hover:text-[var(--color-heritage-gold)] hover:bg-[var(--color-bg-secondary)]"
                     }`}
                   >
-                    {link.label}
+                    <span>{link.label}</span>
+                    {link.tagline && (
+                      <span className="text-[10px] text-[var(--color-text-light)] font-medium tracking-wide leading-none mt-0.5">
+                        {link.tagline}
+                      </span>
+                    )}
                   </Link>
                 );
               })}

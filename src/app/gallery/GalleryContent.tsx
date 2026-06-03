@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play } from "lucide-react";
+import { Play, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Photo {
   src: string;
@@ -36,11 +36,27 @@ const categoryColors: Record<string, string> = {
 
 export default function GalleryContent({ photos, videos }: GalleryContentProps) {
   const [activeCategory, setActiveCategory] = useState("all");
+  const [activePhotoIndex, setActivePhotoIndex] = useState<number | null>(null);
 
   const filteredPhotos =
     activeCategory === "all"
       ? photos
       : photos.filter((photo) => photo.category.toLowerCase() === activeCategory.toLowerCase());
+
+  useEffect(() => {
+    if (activePhotoIndex === null) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setActivePhotoIndex(null);
+      if (e.key === "ArrowRight") {
+        setActivePhotoIndex((prev) => (prev !== null && prev < filteredPhotos.length - 1 ? prev + 1 : 0));
+      }
+      if (e.key === "ArrowLeft") {
+        setActivePhotoIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : filteredPhotos.length - 1));
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activePhotoIndex, filteredPhotos]);
 
   return (
     <>
@@ -51,42 +67,47 @@ export default function GalleryContent({ photos, videos }: GalleryContentProps) 
             <div>
               <span className="section-eyebrow">Photography</span>
               <h2 className="font-display text-3xl font-black mt-2 text-[var(--color-text-primary)]">
-                Visions Gallery
+                Photo Gallery
               </h2>
             </div>
 
             {/* Premium Category Filter Tabs */}
-            <div className="flex flex-wrap gap-1.5 bg-[var(--color-bg-secondary)] p-1.5 rounded-full border border-[var(--color-border)]">
-              {categories.map((cat) => {
-                const isActive = activeCategory === cat;
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`relative px-4 py-2 text-xs font-bold rounded-full capitalize transition-colors cursor-pointer select-none ${
-                      isActive
-                        ? "text-white"
-                        : "text-[var(--color-text-secondary)] hover:text-[var(--color-heritage-gold)]"
-                    }`}
-                  >
-                    <span className="relative z-10">{cat === "all" ? "All Visions" : cat}</span>
-                    {isActive && (
-                      <motion.div
-                        layoutId="gallery-active-pill"
-                        className="absolute inset-0 bg-[var(--color-heritage-gold)] rounded-full shadow-sm z-0"
-                        transition={{ type: "spring", stiffness: 385, damping: 30 }}
-                      />
-                    )}
-                  </button>
-                );
-              })}
+            <div className="flex overflow-x-auto no-scrollbar -mx-6 px-6 md:mx-0 md:px-0 py-1 gap-1.5 shrink-0">
+              <div className="flex gap-1.5 bg-[var(--color-bg-secondary)] p-1.5 rounded-full border border-[var(--color-border)] whitespace-nowrap">
+                {categories.map((cat) => {
+                  const isActive = activeCategory === cat;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => {
+                        setActiveCategory(cat);
+                        setActivePhotoIndex(null); // Reset lightbox selection on category filter
+                      }}
+                      className={`relative px-4 py-2 text-xs font-bold rounded-full capitalize transition-colors cursor-pointer select-none ${
+                        isActive
+                          ? "text-white"
+                          : "text-[var(--color-text-secondary)] hover:text-[var(--color-heritage-gold)]"
+                      }`}
+                    >
+                      <span className="relative z-10">{cat === "all" ? "All Media" : cat}</span>
+                      {isActive && (
+                        <motion.div
+                          layoutId="gallery-active-pill"
+                          className="absolute inset-0 bg-[var(--color-heritage-gold)] rounded-full shadow-sm z-0"
+                          transition={{ type: "spring", stiffness: 385, damping: 30 }}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
           {/* Masonry Image Grid */}
           <motion.div 
             layout
-            className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4"
+            className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4"
           >
             <AnimatePresence mode="popLayout">
               {filteredPhotos.map((photo, i) => (
@@ -97,9 +118,12 @@ export default function GalleryContent({ photos, videos }: GalleryContentProps) 
                   exit={{ opacity: 0, scale: 0.9, y: 10 }}
                   transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                   key={photo.src}
-                  className="gallery-item break-inside-avoid relative group rounded-xl overflow-hidden border border-[var(--color-border)] shadow-sm hover:shadow-lg transition-all duration-300"
+                  className="gallery-item break-inside-avoid relative group rounded-xl overflow-hidden border border-[var(--color-border)] shadow-sm hover:shadow-lg transition-all duration-300 mb-4"
                 >
-                  <div className="relative overflow-hidden cursor-pointer">
+                  <div 
+                    className="relative overflow-hidden cursor-pointer"
+                    onClick={() => setActivePhotoIndex(i)}
+                  >
                     <Image
                       src={photo.src}
                       alt={photo.caption}
@@ -115,9 +139,9 @@ export default function GalleryContent({ photos, videos }: GalleryContentProps) 
                       </span>
                     </div>
 
-                    {/* Gradient & Glassmorphism Text Slide-up Overlay */}
-                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/85 via-black/45 to-transparent translate-y-3 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-350 ease-out pointer-events-none z-10">
+                    {/* Gradient & Glassmorphism Text Slide-up Overlay - DESKTOP ONLY */}
+                    <div className="absolute inset-0 bg-black/20 opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 hidden md:block" />
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent translate-y-3 md:group-hover:translate-y-0 opacity-0 md:group-hover:opacity-100 transition-all duration-350 ease-out pointer-events-none z-10 hidden md:block">
                       <p className="text-[10px] font-black tracking-widest uppercase text-[var(--color-heritage-gold)] mb-1">
                         {photo.category}
                       </p>
@@ -125,6 +149,16 @@ export default function GalleryContent({ photos, videos }: GalleryContentProps) 
                         {photo.caption}
                       </p>
                     </div>
+                  </div>
+
+                  {/* Clean Mobile Caption & Category Info (Visible only on mobile/touch screens) */}
+                  <div className="p-4 bg-white border-t border-[var(--color-border)] md:hidden">
+                    <p className="text-[10px] font-black tracking-widest uppercase text-[var(--color-heritage-gold)] mb-1">
+                      {photo.category}
+                    </p>
+                    <p className="text-[var(--color-text-primary)] text-sm font-semibold leading-snug">
+                      {photo.caption}
+                    </p>
                   </div>
                 </motion.div>
               ))}
@@ -188,6 +222,90 @@ export default function GalleryContent({ photos, videos }: GalleryContentProps) 
           </div>
         </section>
       )}
+
+      {/* Lightbox Modal */}
+      <AnimatePresence>
+        {activePhotoIndex !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-md select-none p-4"
+          >
+            {/* Top Bar / Close Header */}
+            <div className="absolute top-4 right-4 z-50 flex items-center gap-4">
+              <span className="text-white/40 text-xs font-semibold uppercase tracking-wider hidden sm:inline">
+                {activePhotoIndex + 1} / {filteredPhotos.length}
+              </span>
+              <button
+                onClick={() => setActivePhotoIndex(null)}
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Close Gallery Lightbox"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Lightbox Main Container */}
+            <div className="relative flex items-center justify-center w-full max-w-5xl h-full max-h-[75vh]">
+              {/* Prev Button */}
+              <button
+                onClick={() =>
+                  setActivePhotoIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : filteredPhotos.length - 1))
+                }
+                className="absolute left-0 sm:left-4 z-50 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Previous image"
+              >
+                <ChevronLeft size={24} />
+              </button>
+
+              {/* Lightbox Image wrapper */}
+              <motion.div
+                key={activePhotoIndex}
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                className="relative w-full h-full max-w-[90%] max-h-[70vh] flex items-center justify-center"
+              >
+                <img
+                  src={filteredPhotos[activePhotoIndex].src}
+                  alt={filteredPhotos[activePhotoIndex].caption}
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                />
+              </motion.div>
+
+              {/* Next Button */}
+              <button
+                onClick={() =>
+                  setActivePhotoIndex((prev) => (prev !== null && prev < filteredPhotos.length - 1 ? prev + 1 : 0))
+                }
+                className="absolute right-0 sm:right-4 z-50 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Next image"
+              >
+                <ChevronRight size={24} />
+              </button>
+            </div>
+
+            {/* Bottom Caption Info */}
+            <motion.div 
+              key={`caption-${activePhotoIndex}`}
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.1, duration: 0.3 }}
+              className="text-center mt-6 px-4 max-w-xl z-10"
+            >
+              <span className={`badge ${categoryColors[filteredPhotos[activePhotoIndex].category] ?? "badge-gold"} mb-2 shadow-sm`}>
+                {filteredPhotos[activePhotoIndex].category}
+              </span>
+              <p className="text-white text-base font-semibold leading-relaxed">
+                {filteredPhotos[activePhotoIndex].caption}
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
+

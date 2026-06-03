@@ -6,7 +6,7 @@ import { galleryItems } from "@/lib/data";
 import GalleryContent from "./GalleryContent";
 
 export const metadata: Metadata = {
-  title: "Visions",
+  title: "Gallery",
   description:
     "Photos and videos of the Volta Heritage Dance Ensemble's performances, workshops, and cultural events — a visual journey through Ewe cultural traditions.",
 };
@@ -97,8 +97,8 @@ export default function GalleryPage() {
         </div>
         <div className="relative z-10 mx-auto max-w-7xl">
           <div className="kente-strip w-12 mb-6" />
-          <span className="section-eyebrow text-[var(--color-heritage-gold)] mb-3 block">Visions</span>
-          <h1 className="font-display text-5xl md:text-6xl font-black mb-4">Visions</h1>
+          <span className="section-eyebrow text-[var(--color-heritage-gold)] mb-3 block">Gallery</span>
+          <h1 className="font-display text-5xl md:text-6xl font-black mb-4">Media Gallery</h1>
           <p className="text-white/65 max-w-xl leading-relaxed font-light">
             A visual journey through our performances, cultural celebrations, workshops, and heritage moments
             captured across the Volta Region and beyond.
@@ -106,7 +106,7 @@ export default function GalleryPage() {
           <nav className="flex items-center gap-2 mt-6 text-sm text-white/40 font-bold">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <span>/</span>
-            <span className="text-white">Visions</span>
+            <span className="text-white">Gallery</span>
           </nav>
         </div>
       </div>
