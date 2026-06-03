@@ -133,7 +133,7 @@ export default function HomePage() {
           {/* Right Column: Circular Image Frame + Rotating Gradient Border + Floating Event Card */}
           <div className="lg:col-span-5 flex items-center justify-center lg:justify-end relative">
             <motion.div 
-              className="relative w-[340px] h-[340px] sm:w-[380px] sm:h-[380px] lg:w-[400px] lg:h-[400px] flex items-center justify-center"
+              className="relative w-[340px] h-[340px] sm:w-[400px] sm:h-[400px] lg:w-[450px] lg:h-[450px] flex items-center justify-center"
               variants={heroImageVariants}
               initial="hidden"
               animate="visible"
@@ -144,12 +144,12 @@ export default function HomePage() {
               </div>
 
               {/* Inner Circle Image */}
-              <div className="w-[calc(100%-16px)] h-[calc(100%-16px)] rounded-full overflow-hidden border-4 border-[var(--color-heritage-black)] relative z-10 shadow-2xl">
+              <div className="w-[calc(100%-10px)] h-[calc(100%-10px)] rounded-full overflow-hidden border-2 border-[var(--color-heritage-black)] relative z-10 shadow-2xl">
                 <Image
                   src="/images/WhatsApp Image 2026-06-02 at 16.38.10.jpeg"
                   alt="Volta Heritage Dance Ensemble stage performance"
                   fill
-                  className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                  className="object-cover object-center brightness-[1.12] contrast-[1.04] saturate-[1.06] group-hover:scale-105 transition-transform duration-700"
                   priority
                 />
               </div>
