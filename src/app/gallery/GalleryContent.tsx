@@ -61,7 +61,7 @@ export default function GalleryContent({ photos, videos }: GalleryContentProps) 
   return (
     <>
       {/* ── Photo Section with Filters ── */}
-      <section className="py-16 bg-white border-b border-[var(--color-border)]">
+      <section className="py-16 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)]">
         <div className="mx-auto max-w-7xl px-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
             <div>
@@ -73,7 +73,7 @@ export default function GalleryContent({ photos, videos }: GalleryContentProps) 
 
             {/* Premium Category Filter Tabs */}
             <div className="flex overflow-x-auto no-scrollbar -mx-6 px-6 md:mx-0 md:px-0 py-1 gap-1.5 shrink-0">
-              <div className="flex gap-1.5 bg-[var(--color-bg-secondary)] p-1.5 rounded-full border border-[var(--color-border)] whitespace-nowrap">
+              <div className="flex gap-1.5 bg-white p-1.5 rounded-full border border-[var(--color-border)] whitespace-nowrap shadow-sm">
                 {categories.map((cat) => {
                   const isActive = activeCategory === cat;
                   return (
@@ -81,7 +81,7 @@ export default function GalleryContent({ photos, videos }: GalleryContentProps) 
                       key={cat}
                       onClick={() => {
                         setActiveCategory(cat);
-                        setActivePhotoIndex(null); // Reset lightbox selection on category filter
+                        setActivePhotoIndex(null);
                       }}
                       className={`relative px-4 py-2 text-xs font-bold rounded-full capitalize transition-colors cursor-pointer select-none ${
                         isActive
@@ -104,59 +104,38 @@ export default function GalleryContent({ photos, videos }: GalleryContentProps) 
             </div>
           </div>
 
-          {/* Masonry Image Grid */}
-          <motion.div 
+          {/* ── True Pinterest-style Masonry — images keep their natural height ── */}
+          <motion.div
             layout
-            className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4"
+            className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-2"
           >
             <AnimatePresence mode="popLayout">
               {filteredPhotos.map((photo, i) => (
                 <motion.div
                   layout
-                  initial={{ opacity: 0, scale: 0.9, y: 15 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                  initial={{ opacity: 0, scale: 0.94 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.94 }}
+                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                   key={photo.src}
-                  className="gallery-item break-inside-avoid relative group rounded-xl overflow-hidden border border-[var(--color-border)] shadow-sm hover:shadow-lg transition-all duration-300 mb-4"
+                  className="break-inside-avoid mb-2 relative group rounded-xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-shadow duration-300"
+                  onClick={() => setActivePhotoIndex(i)}
                 >
-                  <div 
-                    className="relative overflow-hidden cursor-pointer"
-                    onClick={() => setActivePhotoIndex(i)}
-                  >
-                    <Image
-                      src={photo.src}
-                      alt={photo.caption}
-                      width={600}
-                      height={450}
-                      className="w-full h-auto block transform group-hover:scale-105 transition-transform duration-500 ease-out"
-                    />
-                    
-                    {/* Category badge */}
-                    <div className="absolute top-3 left-3 z-10">
-                      <span className={`badge ${categoryColors[photo.category] ?? "badge-gold"} shadow-sm`}>
-                        {photo.category}
-                      </span>
-                    </div>
+                  {/* Image — renders at its natural aspect ratio */}
+                  <Image
+                    src={photo.src}
+                    alt={photo.caption}
+                    width={600}
+                    height={800}
+                    className="w-full h-auto block transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                  />
 
-                    {/* Gradient & Glassmorphism Text Slide-up Overlay - DESKTOP ONLY */}
-                    <div className="absolute inset-0 bg-black/20 opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 hidden md:block" />
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent translate-y-3 md:group-hover:translate-y-0 opacity-0 md:group-hover:opacity-100 transition-all duration-350 ease-out pointer-events-none z-10 hidden md:block">
-                      <p className="text-[10px] font-black tracking-widest uppercase text-[var(--color-heritage-gold)] mb-1">
-                        {photo.category}
-                      </p>
-                      <p className="text-white text-xs font-semibold leading-snug">
-                        {photo.caption}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Clean Mobile Caption & Category Info (Visible only on mobile/touch screens) */}
-                  <div className="p-4 bg-white border-t border-[var(--color-border)] md:hidden">
-                    <p className="text-[10px] font-black tracking-widest uppercase text-[var(--color-heritage-gold)] mb-1">
+                  {/* Elegant bottom gradient & text info fading in on hover */}
+                  <div className="absolute inset-x-0 bottom-0 px-3 pb-4 pt-12 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none flex flex-col justify-end">
+                    <span className="text-[var(--color-heritage-gold)] text-[8px] font-black uppercase tracking-widest mb-1 translate-y-2 group-hover:translate-y-0 transition-transform duration-300 delay-50">
                       {photo.category}
-                    </p>
-                    <p className="text-[var(--color-text-primary)] text-sm font-semibold leading-snug">
+                    </span>
+                    <p className="text-white text-[10px] font-semibold leading-snug line-clamp-2 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                       {photo.caption}
                     </p>
                   </div>
@@ -295,7 +274,7 @@ export default function GalleryContent({ photos, videos }: GalleryContentProps) 
               transition={{ delay: 0.1, duration: 0.3 }}
               className="text-center mt-6 px-4 max-w-xl z-10"
             >
-              <span className={`badge ${categoryColors[filteredPhotos[activePhotoIndex].category] ?? "badge-gold"} mb-2 shadow-sm`}>
+              <span className="text-[var(--color-heritage-gold)] text-xs font-black uppercase tracking-widest mb-2 block font-sans">
                 {filteredPhotos[activePhotoIndex].category}
               </span>
               <p className="text-white text-base font-semibold leading-relaxed">
