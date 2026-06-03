@@ -84,7 +84,7 @@ export default function HomePage() {
         <div className="relative z-10 mx-auto max-w-7xl px-6 grid lg:grid-cols-12 gap-12 items-center w-full">
           {/* Left Column: Animated Text Content */}
           <motion.div 
-            className="lg:col-span-7 flex flex-col items-start text-left"
+            className="order-2 lg:order-1 lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left w-full"
             variants={heroContainerVariants}
             initial="hidden"
             animate="visible"
@@ -97,7 +97,7 @@ export default function HomePage() {
 
             {/* Headline */}
             <motion.h1 
-              className="font-display text-4xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.08] mb-6 tracking-tight text-left"
+              className="font-display text-4xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.08] mb-6 tracking-tight text-center lg:text-left"
               variants={heroItemVariants}
             >
               We <span className="text-[var(--color-heritage-gold)]">Perform</span> to <span className="text-[var(--color-heritage-gold)]">Educate</span>
@@ -105,7 +105,7 @@ export default function HomePage() {
 
             {/* Subtitle / Paragraph */}
             <motion.p 
-              className="text-base sm:text-lg md:text-xl text-white/75 leading-relaxed mb-6 max-w-xl font-light text-left"
+              className="text-base sm:text-lg md:text-xl text-white/75 leading-relaxed mb-6 max-w-xl font-light text-center lg:text-left mx-auto lg:mx-0"
               variants={heroItemVariants}
             >
               Volta Heritage Dance Ensemble preserves and shares Ewe cultural traditions through authentic dance, drumming, storytelling, and education.
@@ -113,7 +113,7 @@ export default function HomePage() {
 
             {/* CTAs */}
             <motion.div 
-              className="flex flex-wrap items-center gap-6 mb-6"
+              className="flex flex-wrap items-center justify-center lg:justify-start gap-6 mb-6"
               variants={heroItemVariants}
             >
               <Link href="/contact" id="hero-cta-book" className="btn-primary">
@@ -137,14 +137,14 @@ export default function HomePage() {
                 ].map((stat, i) => (
                   <div 
                     key={stat.label} 
-                    className={`flex flex-col items-start pr-4 ${
-                      i > 0 ? "pl-4 border-l border-[rgba(200,149,26,0.15)]" : ""
+                    className={`flex flex-col items-center lg:items-start px-2 sm:px-4 ${
+                      i > 0 ? "border-l border-[rgba(200,149,26,0.15)]" : ""
                     }`}
                   >
-                    <p className="font-display text-2xl sm:text-3xl md:text-4xl font-black text-[var(--color-heritage-gold)] mb-0.5">
+                    <p className="font-display text-2xl sm:text-3xl md:text-4xl font-black text-[var(--color-heritage-gold)] mb-0.5 text-center lg:text-left">
                       <Counter value={stat.value} />
                     </p>
-                    <p className="text-[8px] sm:text-[9px] md:text-[10px] text-white/55 uppercase tracking-widest font-black leading-tight">
+                    <p className="text-[8px] sm:text-[9px] md:text-[10px] text-white/55 uppercase tracking-widest font-black leading-tight text-center lg:text-left">
                       {stat.label}
                     </p>
                   </div>
@@ -154,7 +154,7 @@ export default function HomePage() {
 
             {/* Social Proof Badges */}
             <motion.div 
-              className="hidden sm:flex flex-wrap items-center gap-x-6 gap-y-3 w-full"
+              className="hidden sm:flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 w-full"
               variants={heroItemVariants}
             >
               <span className="text-[10px] uppercase tracking-widest font-black text-white/40">Featured at:</span>
@@ -171,7 +171,7 @@ export default function HomePage() {
           </motion.div>
 
           {/* Right Column: Large centered image container with float and zoom */}
-          <div className="lg:col-span-5 flex flex-col items-center lg:items-end w-full">
+          <div className="order-1 lg:order-2 lg:col-span-5 flex flex-col items-center lg:items-end w-full">
             <motion.div 
               className="relative w-[280px] h-[280px] sm:w-[420px] sm:h-[420px] lg:w-[500px] lg:h-[500px] flex items-center justify-center flex-shrink-0 animate-float"
               variants={heroImageVariants}
