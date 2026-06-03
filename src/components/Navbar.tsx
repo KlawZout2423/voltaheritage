@@ -132,14 +132,7 @@ export default function Navbar() {
                           : "text-[var(--color-text-secondary)] hover:text-[var(--color-heritage-gold)]"
                       }`}
                     >
-                      <div className="flex flex-col items-start">
-                        <span className="relative z-10 leading-tight">{link.label}</span>
-                        {link.tagline && (
-                          <span className="text-[9px] tracking-wider uppercase text-[var(--color-text-light)] font-bold relative z-10 leading-none mt-0.5 opacity-75">
-                            {link.tagline}
-                          </span>
-                        )}
-                      </div>
+                      <span className="relative z-10">{link.label}</span>
                       <ChevronDown
                         size={13}
                         className={`relative z-10 transition-transform duration-250 ${
@@ -189,18 +182,13 @@ export default function Navbar() {
                     href={link.href}
                     id={linkId}
                     onMouseEnter={() => setHoveredIndex(idx)}
-                    className={`relative px-3 py-1.5 rounded-lg text-sm font-semibold transition-all flex flex-col items-start ${
+                    className={`relative px-3 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center ${
                       isLinkActive
                         ? "text-[var(--color-heritage-gold)]"
                         : "text-[var(--color-text-secondary)] hover:text-[var(--color-heritage-gold)]"
                     }`}
                   >
-                    <span className="relative z-10 leading-tight">{link.label}</span>
-                    {link.tagline && (
-                      <span className="text-[9px] tracking-wider uppercase text-[var(--color-text-light)] font-bold relative z-10 leading-none mt-0.5 opacity-75">
-                        {link.tagline}
-                      </span>
-                    )}
+                    <span className="relative z-10">{link.label}</span>
 
                     {/* Active indicator dot */}
                     {isLinkActive && (
@@ -277,14 +265,7 @@ export default function Navbar() {
                           : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]"
                       }`}
                     >
-                      <div className="flex flex-col items-start text-left">
-                        <span>{link.label}</span>
-                        {link.tagline && (
-                          <span className="text-[10px] text-[var(--color-text-light)] font-medium tracking-wide leading-none mt-0.5">
-                            {link.tagline}
-                          </span>
-                        )}
-                      </div>
+                      <span className="text-left">{link.label}</span>
                       <ChevronDown
                         size={14}
                         className={`transition-transform ${mobileExpanded === link.label ? "rotate-180" : ""}`}
@@ -317,18 +298,13 @@ export default function Navbar() {
                     key={link.label}
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className={`block px-3 py-2.5 rounded-lg text-sm font-bold transition-colors flex flex-col items-start text-left ${
+                    className={`block px-3 py-2.5 rounded-lg text-sm font-bold transition-colors text-left ${
                       isLinkActive
                         ? "text-[var(--color-heritage-gold)] bg-[var(--color-bg-secondary)]"
                         : "text-[var(--color-text-secondary)] hover:text-[var(--color-heritage-gold)] hover:bg-[var(--color-bg-secondary)]"
                     }`}
                   >
                     <span>{link.label}</span>
-                    {link.tagline && (
-                      <span className="text-[10px] text-[var(--color-text-light)] font-medium tracking-wide leading-none mt-0.5">
-                        {link.tagline}
-                      </span>
-                    )}
                   </Link>
                 );
               })}
