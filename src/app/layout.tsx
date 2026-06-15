@@ -3,6 +3,7 @@ import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { CmsProvider } from "@/context/CmsContext";
 
 /* ─── Fonts ──────────────────────────────────────────────────
    Cormorant Garamond: editorial, luxurious display serif
@@ -116,13 +117,15 @@ export default function RootLayout({
           Skip to content
         </a>
 
-        <Navbar />
+        <CmsProvider>
+          <Navbar />
 
-        <main id="main-content" tabIndex={-1} className="outline-none">
-          {children}
-        </main>
+          <main id="main-content" tabIndex={-1} className="outline-none">
+            {children}
+          </main>
 
-        <Footer />
+          <Footer />
+        </CmsProvider>
       </body>
     </html>
   );

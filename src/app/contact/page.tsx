@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Mail, Phone, Send, CheckCircle, ShieldCheck, Star } from "lucide-react";
 import { institution } from "@/lib/data";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import { useCms } from "@/context/CmsContext";
 
 const formVariants = {
   hidden: { opacity: 0 },
@@ -41,6 +42,7 @@ const testimonials = [
 ];
 
 export default function ContactPage() {
+  const { addBooking } = useCms();
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -63,6 +65,17 @@ export default function ContactPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    addBooking({
+      name: form.name,
+      email: form.email,
+      phone: form.phone,
+      enquiryType: form.enquiryType,
+      eventDate: form.eventDate,
+      venueLocation: form.venueLocation,
+      audienceSize: form.audienceSize,
+      subject: form.subject,
+      message: form.message,
+    });
     setSubmitted(true);
   }
 
@@ -166,25 +179,41 @@ export default function ContactPage() {
                 <p className="text-xs font-bold text-[var(--color-text-secondary)] uppercase tracking-widest mb-4">
                   Follow Our Journey
                 </p>
-                <div className="flex items-center gap-3">
-                  <a href={institution.facebook} target="_blank" rel="noopener noreferrer" id="contact-facebook"
-                    className="w-10 h-10 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)] hover:bg-[var(--color-heritage-gold)] hover:border-[var(--color-heritage-gold)] hover:text-white flex items-center justify-center transition-all text-[var(--color-text-muted)] shadow-sm">
-                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                    </svg>
-                  </a>
-                  <a href={institution.youtube} target="_blank" rel="noopener noreferrer" id="contact-youtube"
-                    className="w-10 h-10 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)] hover:bg-[var(--color-heritage-gold)] hover:border-[var(--color-heritage-gold)] hover:text-white flex items-center justify-center transition-all text-[var(--color-text-muted)] shadow-sm">
-                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                      <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.518 3.545 12 3.545 12 3.545s-7.518 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.87.508 9.388.508 9.388.508s7.518 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                    </svg>
-                  </a>
-                  <a href={institution.tiktok} target="_blank" rel="noopener noreferrer" id="contact-tiktok"
-                    className="w-10 h-10 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)] hover:bg-[var(--color-heritage-gold)] hover:border-[var(--color-heritage-gold)] hover:text-white flex items-center justify-center transition-all text-[var(--color-text-muted)] shadow-sm">
-                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.16 8.16 0 0 0 4.77 1.52V6.75a4.85 4.85 0 0 1-1-.06z" />
-                    </svg>
-                  </a>
+                 <div className="flex items-center gap-3">
+                  {institution.facebook && (
+                    <a href={institution.facebook} target="_blank" rel="noopener noreferrer" id="contact-facebook"
+                      className="w-10 h-10 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)] hover:bg-[var(--color-heritage-gold)] hover:border-[var(--color-heritage-gold)] hover:text-white flex items-center justify-center transition-all text-[var(--color-text-muted)] shadow-sm">
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                      </svg>
+                    </a>
+                  )}
+                  {institution.youtube && (
+                    <a href={institution.youtube} target="_blank" rel="noopener noreferrer" id="contact-youtube"
+                      className="w-10 h-10 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)] hover:bg-[var(--color-heritage-gold)] hover:border-[var(--color-heritage-gold)] hover:text-white flex items-center justify-center transition-all text-[var(--color-text-muted)] shadow-sm">
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                        <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.518 3.545 12 3.545 12 3.545s-7.518 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.87.508 9.388.508 9.388.508s7.518 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                      </svg>
+                    </a>
+                  )}
+                  {institution.tiktok && (
+                    <a href={institution.tiktok} target="_blank" rel="noopener noreferrer" id="contact-tiktok"
+                      className="w-10 h-10 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)] hover:bg-[var(--color-heritage-gold)] hover:border-[var(--color-heritage-gold)] hover:text-white flex items-center justify-center transition-all text-[var(--color-text-muted)] shadow-sm">
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.16 8.16 0 0 0 4.77 1.52V6.75a4.85 4.85 0 0 1-1-.06z" />
+                      </svg>
+                    </a>
+                  )}
+                  {institution.instagram && (
+                    <a href={institution.instagram} target="_blank" rel="noopener noreferrer" id="contact-instagram"
+                      className="w-10 h-10 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)] hover:bg-[var(--color-heritage-gold)] hover:border-[var(--color-heritage-gold)] hover:text-white flex items-center justify-center transition-all text-[var(--color-text-muted)] shadow-sm">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                      </svg>
+                    </a>
+                  )}
                 </div>
               </div>
 
@@ -535,9 +564,9 @@ export default function ContactPage() {
           </div>
           <div className="relative z-10 text-center">
             <MapPin size={32} className="text-[var(--color-heritage-gold)] mx-auto mb-3" />
-            <p className="font-display text-xl font-black text-[var(--color-text-primary)]">Ho, Volta Region, Ghana</p>
+            <p className="font-display text-xl font-black text-[var(--color-text-primary)]">Ho-Dome, Ho, Volta Region, Ghana</p>
             <a
-              href="https://maps.google.com/?q=Ho,+Volta+Region,+Ghana"
+              href="https://maps.google.com/?q=Ho-Dome,+Ho,+Volta+Region,+Ghana"
               target="_blank"
               rel="noopener noreferrer"
               className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-[var(--color-heritage-gold)] hover:underline"

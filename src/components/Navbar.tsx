@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, ChevronDown } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import { institution } from "@/lib/data";
 
 const navLinks = [
@@ -47,6 +47,13 @@ export default function Navbar() {
   const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const pathname = usePathname();
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+  if (pathname && pathname.startsWith("/admin")) return null;
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -71,6 +78,12 @@ export default function Navbar() {
             : "bg-white border-b border-[var(--color-border)]"
         }`}
       >
+        {/* ── Scroll Progress Line ── */}
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--color-heritage-gold)] z-50 origin-left"
+          style={{ scaleX }}
+        />
+
         <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between gap-4">
 
@@ -144,6 +157,15 @@ export default function Navbar() {
                       {isLinkActive && (
                         <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[var(--color-heritage-gold)]" />
                       )}
+
+                      {/* Shared sliding background capsule */}
+                      {hoveredIndex === idx && (
+                        <motion.div
+                          layoutId="navbar-hover-bg"
+                          className="absolute inset-0 bg-[var(--color-heritage-gold-glow)] rounded-lg -z-10"
+                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        />
+                      )}
                     </button>
 
                     {/* Dropdown with animation */}
@@ -194,27 +216,18 @@ export default function Navbar() {
                     {isLinkActive && (
                       <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[var(--color-heritage-gold)]" />
                     )}
+
+                    {/* Shared sliding background capsule */}
+                    {hoveredIndex === idx && (
+                      <motion.div
+                        layoutId="navbar-hover-bg"
+                        className="absolute inset-0 bg-[var(--color-heritage-gold-glow)] rounded-lg -z-10"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
+                    )}
                   </Link>
                 );
               })}
-
-              {/* Shared sliding background capsule */}
-              <AnimatePresence>
-                {hoveredIndex !== null && (
-                  <motion.div
-                    layoutId="navbar-hover-bg"
-                    className="absolute top-1/2 -translate-y-1/2 h-[75%] bg-[var(--color-heritage-gold-glow)] rounded-lg -z-10 pointer-events-none"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    style={{
-                      left: `${100 * (hoveredIndex / navLinks.length)}%`, // Rough approximation handled by Framer Motion layoutId
-                      width: "80px", // Automatically measured and transitioned by layoutId if elements wrap
-                    }}
-                  />
-                )}
-              </AnimatePresence>
             </div>
 
             {/* ── CTA + hamburger ── */}

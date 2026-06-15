@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, MapPin, Star, ArrowRight, List, GitCommit } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import { useCms } from "@/context/CmsContext";
 
 interface EventItem {
   id: string;
@@ -40,7 +41,9 @@ function formatDate(iso: string) {
   });
 }
 
-export default function EventsContent({ events }: EventsContentProps) {
+export default function EventsContent({ events: initialEvents }: EventsContentProps) {
+  const { state } = useCms();
+  const events = state?.events || initialEvents;
   const [viewMode, setViewMode] = useState<"list" | "timeline">("list");
   
   // Sort events chronologically (ascending for timeline, descending/default for lists)

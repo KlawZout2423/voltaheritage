@@ -7,15 +7,16 @@ export const institution = {
   name: "Volta Heritage Dance Ensemble",
   shortName: "VHDE",
   tagline: "We Perform, to Educate",
-  founded: "2002",
-  location: "Ho, Volta Region, Ghana",
-  email: "info@voltaheritage.art",           // TODO: replace with real email
-  phone: "+233 XX XXX XXXX",                  // TODO: replace with real phone
-  address: "Ho, Volta Region, Ghana",         // TODO: replace with full address
-  facebook: "https://facebook.com/voltaheritage",
-  tiktok: "https://tiktok.com/@voltaheritage",
-  instagram: "https://instagram.com/voltaheritage",
-  youtube: "https://youtube.com/@voltaheritage",
+  founded: "2012",
+  foundedFull: "31st July 2012",
+  location: "Ho-Dome, Volta Region, Ghana",
+  email: "nanevitheophilusbhervdey@gmail.com",
+  phone: "+233 24 952 7440",
+  address: "Ho-Dome, Ho, Volta Region, Ghana",
+  facebook: "https://www.facebook.com/share/1JhCZ5eWAj/",
+  tiktok: "",
+  instagram: "",
+  youtube: "",
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -422,23 +423,30 @@ export const services: Service[] = [
 export const team: TeamMember[] = [
   {
     id: "tm-1",
-    name: "The Director",                       // TODO: Replace with real name
-    title: "Ensemble Director",
-    bio: "A lifelong custodian of Ewe cultural heritage with over two decades of experience leading traditional dance ensembles across Ghana and West Africa. Under their leadership, VHDE has performed in 8 countries.",
-    imageUrl: "/images/WhatsApp Image 2026-06-02 at 10.54.44.jpeg", // TODO: Replace with real photo
+    name: "Theophilus K. Nanevi",
+    title: "Founder & Chief Executive Officer",
+    bio: "A dedicated traditional creative dance and drum lecturer, Theophilus founded the Volta Heritage Dance Ensemble as a living archive for the Volta Region's performing arts. Under his visionary leadership the ensemble preserves the ancestral stories, complex rhythms, and traditional dances of Ewe heritage — sharing them with audiences locally and internationally.",
+    imageUrl: "/images/team-theophilus-nanevi.png",
   },
   {
     id: "tm-2",
-    name: "Master Drummer",                      // TODO: Replace with real name
-    title: "Lead Drummer & Music Director",
-    bio: "A third-generation Ewe master drummer and specialist in the Atsimevu drum. Responsible for training all junior drummers at VHDE and composing new arrangements that honour traditional forms.",
-    imageUrl: "/images/WhatsApp Image 2026-06-02 at 10.54.33 (1).jpeg",
+    name: "Edem Godwin Amevor",
+    title: "President",
+    bio: "Elected President in 2025 after joining the ensemble in 2011, Edem has grown through the ranks as a dancer, singer, and drummer. A student at Regional Maritime University (RMU), he provides strategic direction and unity, having led school cultural groups from JHS through SHS before taking the helm of VHDE.",
+    imageUrl: "/images/team-edem-amevor.jpg",
   },
   {
     id: "tm-3",
-    name: "Dance Choreographer",                 // TODO: Replace with real name
-    title: "Principal Choreographer",
-    bio: "Trained in five Ewe dance traditions including Agbadza, Borborbor, Husago, Kinka, and Gbolo. Leads all ensemble rehearsals and choreographs performance sequences for major events.",
-    imageUrl: "/images/WhatsApp Image 2026-06-02 at 10.54.34 (1).jpeg",
+    name: "Johnson Marvin Danyo",
+    title: "Artistic Director",
+    bio: "A final-year Industrial Art student at Ho Technical University (HTU) and cultural advocate active in leadership since 2019. Johnson provides creative direction bridging tradition and contemporary expression — grooming pageant contestants, training students for inter-school competitions, and mentoring ensemble members with discipline and confidence.",
+    imageUrl: "/images/team-johnson-danyo.jpg",
+  },
+  {
+    id: "tm-4",
+    name: "Bless Kove",
+    title: "Drum Major & Lead Drummer",
+    bio: "A graduate of Ho Technical University (HTU) currently on National Service, Bless joined the ensemble in 2023 and assumed office as Drum Major in 2024. With experience in both traditional and modern drumming styles, he leads drumming activities, mentors developing drummers, and is committed to preserving the rich rhythmic heritage of the Volta Region.",
+    imageUrl: "/images/team-bless-kove.png",
   },
 ];

@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { MapPin, Mail, Phone, ExternalLink } from "lucide-react";
 import { institution } from "@/lib/data";
 
@@ -22,6 +25,9 @@ const quickLinks = [
 ];
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname && pathname.startsWith("/admin")) return null;
+
   return (
     <footer className="bg-[var(--color-heritage-black)] text-white">
       {/* Kente strip at top of footer */}
@@ -53,43 +59,64 @@ export default function Footer() {
             </p>
             <p className="text-xs font-bold text-[var(--color-heritage-gold)] uppercase tracking-widest mb-3">Follow Us</p>
             <div className="flex items-center gap-3">
-              <a
-                href={institution.facebook}
-                target="_blank"
-                rel="noopener noreferrer"
-                id="footer-facebook"
-                aria-label="Facebook"
-                className="w-9 h-9 rounded-lg bg-white/10 hover:bg-[var(--color-heritage-gold)] flex items-center justify-center transition-colors"
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                </svg>
-              </a>
-              <a
-                href={institution.youtube}
-                target="_blank"
-                rel="noopener noreferrer"
-                id="footer-youtube"
-                aria-label="YouTube"
-                className="w-9 h-9 rounded-lg bg-white/10 hover:bg-[var(--color-heritage-gold)] flex items-center justify-center transition-colors"
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                  <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z" />
-                </svg>
-              </a>
-              <a
-                href={institution.tiktok}
-                target="_blank"
-                rel="noopener noreferrer"
-                id="footer-tiktok"
-                aria-label="TikTok"
-                className="w-9 h-9 rounded-lg bg-white/10 hover:bg-[var(--color-heritage-gold)] flex items-center justify-center transition-colors"
-              >
-                {/* TikTok icon via SVG */}
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.16 8.16 0 0 0 4.77 1.52V6.75a4.85 4.85 0 0 1-1-.06z" />
-                </svg>
-              </a>
+              {institution.facebook && (
+                <a
+                  href={institution.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  id="footer-facebook"
+                  aria-label="Facebook"
+                  className="w-9 h-9 rounded-lg bg-white/10 hover:bg-[var(--color-heritage-gold)] flex items-center justify-center transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                  </svg>
+                </a>
+              )}
+              {institution.youtube && (
+                <a
+                  href={institution.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  id="footer-youtube"
+                  aria-label="YouTube"
+                  className="w-9 h-9 rounded-lg bg-white/10 hover:bg-[var(--color-heritage-gold)] flex items-center justify-center transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z" />
+                  </svg>
+                </a>
+              )}
+              {institution.tiktok && (
+                <a
+                  href={institution.tiktok}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  id="footer-tiktok"
+                  aria-label="TikTok"
+                  className="w-9 h-9 rounded-lg bg-white/10 hover:bg-[var(--color-heritage-gold)] flex items-center justify-center transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.16 8.16 0 0 0 4.77 1.52V6.75a4.85 4.85 0 0 1-1-.06z" />
+                  </svg>
+                </a>
+              )}
+              {institution.instagram && (
+                <a
+                  href={institution.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  id="footer-instagram"
+                  aria-label="Instagram"
+                  className="w-9 h-9 rounded-lg bg-white/10 hover:bg-[var(--color-heritage-gold)] flex items-center justify-center transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                  </svg>
+                </a>
+              )}
             </div>
           </div>
 
