@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import { institution } from "@/lib/data";
@@ -36,13 +36,32 @@ const navLinks = [
   { label: "In Orbit", href: "/events", tagline: "Events" },
   { label: "Gallery", href: "/gallery", tagline: "Gallery" },
   { label: "Offerings", href: "/services", tagline: "Services" },
-  { label: "Blue Spotlight", href: "/news", tagline: "News" },
+  { label: "Blog", href: "/blog", tagline: "Blog" },
   { label: "Connect", href: "/contact", tagline: "Contact" },
 ];
 
 export default function Navbar() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [logoClicks, setLogoClicks] = useState(0);
+  const [lastClickTime, setLastClickTime] = useState(0);
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    const now = Date.now();
+    if (now - lastClickTime < 1500) {
+      const nextClicks = logoClicks + 1;
+      setLogoClicks(nextClicks);
+      if (nextClicks >= 5) {
+        e.preventDefault();
+        setLogoClicks(0);
+        router.push("/admin/login");
+      }
+    } else {
+      setLogoClicks(1);
+    }
+    setLastClickTime(now);
+  };
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -53,7 +72,7 @@ export default function Navbar() {
     damping: 30,
     restDelta: 0.001
   });
-  if (pathname && pathname.startsWith("/admin")) return null;
+  const isAdmin = pathname && pathname.startsWith("/admin");
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -65,6 +84,8 @@ export default function Navbar() {
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  if (isAdmin) return null;
 
   return (
     <>
@@ -88,7 +109,7 @@ export default function Navbar() {
           <div className="flex h-16 items-center justify-between gap-4">
 
             {/* ── Logo ── */}
-            <Link href="/" className="flex items-center gap-3 flex-shrink-0 group">
+            <Link href="/" onClick={handleLogoClick} className="flex items-center gap-3 flex-shrink-0 group">
               <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-[var(--color-bg-secondary)] border border-[var(--color-border)] flex items-center justify-center">
                 <Image
                   src="/images/logo.png"

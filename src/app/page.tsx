@@ -4,7 +4,7 @@ import { useState, useEffect, Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Calendar, MapPin, ArrowRight, Play, Users, Music, Star, Globe, ChevronDown } from "lucide-react";
+import { Calendar, MapPin, ArrowRight, Play, Users, Music, Star, Globe, ChevronDown, Video } from "lucide-react";
 import { articles, heritageCategories, institution } from "@/lib/data";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import { useCms } from "@/context/CmsContext";
@@ -76,7 +76,18 @@ export default function HomePage() {
 
   const featuredEvents = cmsEvents.filter((e) => e.isFeatured).slice(0, 2);
   const upcomingEvents = cmsEvents.slice(0, 3);
-  const latestArticles = articles.slice(0, 3);
+  const dbPosts = (state.blogPosts || []).filter((p) => p.isPublished).slice(0, 3);
+  const latestArticles = dbPosts.length > 0
+    ? dbPosts
+    : articles.slice(0, 3).map((a) => ({
+        id: a.id,
+        title: a.title,
+        content: a.excerpt,
+        mediaType: "image" as const,
+        mediaUrl: a.thumbnailUrl,
+        isPublished: true,
+        createdAt: a.publishedAt,
+      }));
   const heritageHighlights = heritageCategories.slice(0, 4);
 
   // ── Render Section Hero ──
@@ -543,8 +554,8 @@ export default function HomePage() {
                 Latest News
               </h2>
             </div>
-            <Link href="/news" id="news-view-all" className="btn-outline btn-sm flex-shrink-0 mt-4 sm:mt-0 font-bold">
-              All Articles <ArrowRight size={14} />
+            <Link href="/blog" id="news-view-all" className="btn-outline btn-sm flex-shrink-0 mt-4 sm:mt-0 font-bold">
+              Our Blog <ArrowRight size={14} />
             </Link>
           </AnimateOnScroll>
         </div>
@@ -558,35 +569,38 @@ export default function HomePage() {
               className="flex"
             >
               <article className={`card flex flex-col bg-white w-full hover:border-[var(--color-heritage-gold)] ${i === 0 ? "card-gold" : ""}`}>
-                <div className="aspect-card relative overflow-hidden rounded-t-xl">
-                  <Image
-                    src={article.thumbnailUrl}
-                    alt={article.title}
-                    fill
-                    className="img-cover"
-                  />
+                <div className="aspect-card relative overflow-hidden rounded-t-xl min-h-[180px]">
+                  {article.mediaUrl ? (
+                    <Image
+                      src={article.mediaUrl}
+                      alt={article.title}
+                      fill
+                      className="img-cover object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-neutral-900 flex items-center justify-center text-white">
+                      <Video size={28} className="text-[var(--color-heritage-gold)]" />
+                    </div>
+                  )}
                   <div className="absolute top-3 left-3">
-                    <span className={`badge ${
-                      article.category === "news" ? "badge-gold"
-                      : article.category === "cultural-story" ? "badge-red"
-                      : "badge-green"
-                    }`}>
-                      {article.category.replace("-", " ")}
+                    <span className="badge badge-gold">
+                      {article.mediaType.toUpperCase()}
                     </span>
                   </div>
                 </div>
                 <div className="p-5 flex flex-col flex-1">
                   <p className="text-xs text-[var(--color-text-light)] mb-2 font-semibold">
-                    {formatDate(article.publishedAt)} · {article.author}
+                    {formatDate(article.createdAt)}
                   </p>
-                  <h3 className="font-display font-bold text-lg text-[var(--color-text-primary)] leading-snug mb-3 flex-1">
+                  <h3 className="font-display font-bold text-lg text-[var(--color-text-primary)] leading-snug mb-3 flex-1 line-clamp-2">
                     {article.title}
                   </h3>
                   <p className="text-sm text-[var(--color-text-muted)] leading-relaxed line-clamp-2 mb-5 font-light">
-                    {article.excerpt}
+                    {article.content}
                   </p>
-                  <Link href={`/news/${article.slug}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--color-heritage-gold)] hover:gap-3 transition-all">
-                    Read Article <ArrowRight size={13} />
+                  <Link href="/blog" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--color-heritage-gold)] hover:gap-3 transition-all">
+                    Read & Watch <ArrowRight size={13} />
                   </Link>
                 </div>
               </article>

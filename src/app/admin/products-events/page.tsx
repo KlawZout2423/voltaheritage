@@ -1,434 +1,373 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Edit2, Trash2, Calendar, Tag, DollarSign, X } from "lucide-react";
+import {
+  Plus, Trash2, Calendar, MapPin, Tag, X, Star, Music,
+  Edit2, ChevronDown, ChevronUp, AlertTriangle,
+} from "lucide-react";
 import { useCms } from "@/context/CmsContext";
 import { Service, Event } from "@/lib/types";
 
-export default function AdminProductsEvents() {
-  const { state, updateDraft, publishState, currentUser } = useCms();
-  const [activeTab, setActiveTab] = useState<"services" | "events">("services");
-  const [modalOpen, setModalOpen] = useState(false);
+// ── Color accent meta ──────────────────────────────────────────
+const colorMeta = {
+  gold:  { badge: "bg-[var(--color-heritage-gold-light)]  text-[var(--color-heritage-gold-dark)]  border-[var(--color-heritage-gold)]/30",  dot: "bg-[var(--color-heritage-gold)]",  label: "Heritage Gold"  },
+  red:   { badge: "bg-[var(--color-heritage-red-light)]   text-[var(--color-heritage-red)]         border-[var(--color-heritage-red)]/30",    dot: "bg-[var(--color-heritage-red)]",   label: "Heritage Red"   },
+  green: { badge: "bg-[var(--color-heritage-green-light)] text-[var(--color-heritage-green)]       border-[var(--color-heritage-green)]/30",  dot: "bg-[var(--color-heritage-green)]", label: "Heritage Green" },
+};
 
-  // Form states
-  const [serviceForm, setServiceForm] = useState<Partial<Service>>({
-    title: "",
-    description: "",
-    color: "gold",
-    features: ["", ""],
+const categoryMeta: Record<string, string> = {
+  performance: "bg-[var(--color-heritage-gold-light)]  text-[var(--color-heritage-gold-dark)]",
+  festival:    "bg-[var(--color-heritage-red-light)]   text-[var(--color-heritage-red)]",
+  workshop:    "bg-[var(--color-heritage-green-light)] text-[var(--color-heritage-green)]",
+  exhibition:  "bg-[#FAF7F2] text-[#7A6A57]",
+  other:       "bg-[#FAF7F2] text-[#7A6A57]",
+};
+
+function formatDate(d: string) {
+  if (!d) return "TBD";
+  return new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+// ── Shared modal shell ─────────────────────────────────────────
+function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-sm p-4">
+      <div className="bg-white border border-[#E8DDD0] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-fade-in-up max-h-[90vh] flex flex-col">
+        <div className="flex justify-between items-center px-6 py-4 border-b border-[#E8DDD0] shrink-0">
+          <h3 className="font-display font-black text-lg text-[#1C1208]">{title}</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-[#7A6A57] hover:text-[#1C1208] hover:bg-[#FAF7F2] transition-colors cursor-pointer"><X size={16} /></button>
+        </div>
+        <div className="overflow-y-auto flex-1">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+// ── Service Card ───────────────────────────────────────────────
+function ServiceCard({ svc, isReadOnly, onDelete }: { svc: Service; isReadOnly: boolean; onDelete: (id: string) => void }) {
+  const [expanded, setExpanded] = useState(false);
+  const cm = colorMeta[svc.color] ?? colorMeta.gold;
+  return (
+    <div className="bg-white border border-[#E8DDD0] rounded-2xl shadow-sm hover:shadow-md hover:border-[var(--color-heritage-gold)]/40 transition-all flex flex-col overflow-hidden group">
+      {/* Accent top bar */}
+      <div className={`h-1 w-full ${cm.dot}`} />
+      <div className="p-5 flex flex-col gap-3 flex-1">
+        <div className="flex justify-between items-start gap-2">
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border ${cm.badge}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${cm.dot}`} />
+            {cm.label}
+          </span>
+          <button disabled={isReadOnly} onClick={() => onDelete(svc.id)}
+            className="p-1.5 rounded-lg text-[#C8B99A] hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer disabled:opacity-30 opacity-0 group-hover:opacity-100">
+            <Trash2 size={13} />
+          </button>
+        </div>
+        <div>
+          <h3 className="font-display font-black text-sm text-[#1C1208] leading-snug mb-1">{svc.title}</h3>
+          <p className={`text-[11px] text-[#7A6A57] leading-relaxed font-light ${expanded ? "" : "line-clamp-2"}`}>{svc.description}</p>
+        </div>
+        <div className="border-t border-[#E8DDD0] pt-3 mt-auto">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[9px] font-black uppercase tracking-wider text-[#A8957E]">Features</p>
+            {svc.features.length > 2 && (
+              <button onClick={() => setExpanded(!expanded)} className="text-[9px] font-bold text-[var(--color-heritage-gold)] flex items-center gap-0.5 cursor-pointer">
+                {expanded ? <><ChevronUp size={10} /> Less</> : <><ChevronDown size={10} /> +{svc.features.length - 2} more</>}
+              </button>
+            )}
+          </div>
+          <ul className="space-y-1">
+            {(expanded ? svc.features : svc.features.slice(0, 2)).map((f, i) => (
+              <li key={i} className="flex items-center gap-2 text-[10px] text-[#7A6A57] font-medium">
+                <span className={`w-1 h-1 rounded-full shrink-0 ${cm.dot}`} /> {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Event Card ─────────────────────────────────────────────────
+function EventCard({ evt, isReadOnly, onDelete }: { evt: Event; isReadOnly: boolean; onDelete: (id: string) => void }) {
+  const catClass = categoryMeta[evt.category] ?? categoryMeta.other;
+  return (
+    <div className="bg-white border border-[#E8DDD0] rounded-2xl shadow-sm hover:shadow-md hover:border-[var(--color-heritage-gold)]/40 transition-all flex flex-col overflow-hidden group">
+      <div className="p-5 flex flex-col gap-3 flex-1">
+        <div className="flex justify-between items-start gap-2">
+          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${catClass}`}>
+            {evt.category}
+          </span>
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {evt.isFeatured && <Star size={13} className="text-[var(--color-heritage-gold)] fill-[var(--color-heritage-gold)]" />}
+            <button disabled={isReadOnly} onClick={() => onDelete(evt.id)}
+              className="p-1.5 rounded-lg text-[#C8B99A] hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer disabled:opacity-30">
+              <Trash2 size={13} />
+            </button>
+          </div>
+        </div>
+        <div>
+          <h3 className="font-display font-black text-sm text-[#1C1208] leading-snug mb-1">{evt.title}</h3>
+          <p className="text-[11px] text-[#7A6A57] leading-relaxed font-light line-clamp-2">{evt.description}</p>
+        </div>
+        <div className="border-t border-[#E8DDD0] pt-3 mt-auto space-y-1.5">
+          <div className="flex items-center gap-2 text-[10px] text-[#7A6A57] font-semibold">
+            <Calendar size={11} className="text-[var(--color-heritage-gold)] shrink-0" />
+            {formatDate(evt.date)}{evt.endDate ? ` — ${formatDate(evt.endDate)}` : ""}
+          </div>
+          <div className="flex items-center gap-2 text-[10px] text-[#7A6A57] font-semibold">
+            <MapPin size={11} className="text-[var(--color-heritage-gold)] shrink-0" />
+            <span className="truncate">{evt.venue}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Add Service Modal ──────────────────────────────────────────
+function AddServiceModal({ onClose, onAdd }: {
+  onClose: () => void;
+  onAdd: (s: Omit<Service, "id" | "icon">) => void;
+}) {
+  const [form, setForm] = useState<Partial<Service>>({
+    title: "", description: "", color: "gold", features: ["", ""],
   });
 
-  const [eventForm, setEventForm] = useState<Partial<Event>>({
-    title: "",
-    description: "",
-    date: "",
-    venue: "",
+  return (
+    <Modal title="Add Performance Service" onClose={onClose}>
+      <form
+        onSubmit={(e) => { e.preventDefault(); onAdd({ title: form.title!, description: form.description!, color: form.color!, features: form.features!.filter(Boolean) }); }}
+        className="p-6 space-y-4 text-xs"
+      >
+        <div>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-1.5 block">Service Title *</label>
+          <input required type="text" placeholder="e.g. Masterclass Drumming Program" className="form-input text-xs"
+            value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+        </div>
+        <div>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-1.5 block">Description *</label>
+          <textarea required rows={3} placeholder="Duration, scope, and what's included…" className="form-input text-xs resize-none"
+            value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+        </div>
+        <div>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-2 block">Accent Colour</label>
+          <div className="flex gap-2">
+            {(["gold", "red", "green"] as const).map((c) => {
+              const cm = colorMeta[c];
+              return (
+                <button key={c} type="button" onClick={() => setForm({ ...form, color: c })}
+                  className={`flex-1 flex items-center gap-2 p-2.5 rounded-xl border transition-all cursor-pointer text-[10px] font-bold ${
+                    form.color === c ? `${cm.badge} shadow-sm` : "border-[#E8DDD0] hover:bg-[#FAF7F2] text-[#7A6A57]"
+                  }`}>
+                  <span className={`w-3 h-3 rounded-full shrink-0 ${cm.dot}`} />
+                  {cm.label.split(" ")[1]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-1.5 block">Key Features</label>
+          <div className="space-y-2">
+            {[0, 1].map((i) => (
+              <input key={i} required type="text" placeholder={`Feature ${i + 1} (e.g. 24-member troupe)`}
+                className="form-input text-xs"
+                value={form.features?.[i] ?? ""}
+                onChange={(e) => { const f = [...(form.features ?? [])]; f[i] = e.target.value; setForm({ ...form, features: f }); }} />
+            ))}
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 pt-3 border-t border-[#E8DDD0]">
+          <button type="button" onClick={onClose} className="btn-outline text-xs px-4 py-2 rounded-xl cursor-pointer">Cancel</button>
+          <button type="submit" className="btn-primary text-xs px-4 py-2 rounded-xl shadow-lg cursor-pointer">Create Service</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+// ── Add Event Modal ────────────────────────────────────────────
+function AddEventModal({ onClose, onAdd }: {
+  onClose: () => void;
+  onAdd: (e: Omit<Event, "id">) => void;
+}) {
+  const [form, setForm] = useState<Partial<Event>>({
+    title: "", description: "", date: "", venue: "",
     category: "performance",
     imageUrl: "/images/WhatsApp Image 2026-06-02 at 10.54.25.jpeg",
     isFeatured: false,
   });
 
+  return (
+    <Modal title="Schedule New Event" onClose={onClose}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onAdd({
+            title: form.title!, description: form.description!,
+            date: form.date!, venue: form.venue!,
+            category: form.category!, imageUrl: form.imageUrl!,
+            isFeatured: form.isFeatured ?? false,
+          });
+        }}
+        className="p-6 space-y-4 text-xs"
+      >
+        <div>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-1.5 block">Event Title *</label>
+          <input required type="text" placeholder="e.g. Hogbetsotso Cultural Showcase" className="form-input text-xs"
+            value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+        </div>
+        <div>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-1.5 block">Description *</label>
+          <textarea required rows={3} placeholder="Outline performance details and highlights…" className="form-input text-xs resize-none"
+            value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-1.5 block">Event Date *</label>
+            <input required type="date" className="form-input text-xs" value={form.date}
+              onChange={(e) => setForm({ ...form, date: e.target.value })} />
+          </div>
+          <div>
+            <label className="text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-1.5 block">Category *</label>
+            <select className="form-input text-xs" value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value as Event["category"] })}>
+              <option value="performance">Stage Performance</option>
+              <option value="festival">Cultural Festival</option>
+              <option value="workshop">Workshop</option>
+              <option value="exhibition">Exhibition</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-1.5 block">Venue *</label>
+          <input required type="text" placeholder="e.g. Ho Cultural Centre, Volta Region" className="form-input text-xs"
+            value={form.venue} onChange={(e) => setForm({ ...form, venue: e.target.value })} />
+        </div>
+        <label className="flex items-center gap-3 p-3 bg-[#FAF7F2] rounded-xl border border-[#E8DDD0] cursor-pointer hover:bg-[#F2EBE0] transition-colors">
+          <input type="checkbox" className="w-4 h-4 accent-[var(--color-heritage-gold)]"
+            checked={form.isFeatured} onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })} />
+          <div>
+            <p className="font-bold text-[#1C1208]">Pin as Featured Event</p>
+            <p className="text-[10px] text-[#7A6A57] font-light mt-0.5">Highlights this event at the top of the public Events page</p>
+          </div>
+        </label>
+        <div className="flex justify-end gap-2 pt-3 border-t border-[#E8DDD0]">
+          <button type="button" onClick={onClose} className="btn-outline text-xs px-4 py-2 rounded-xl cursor-pointer">Cancel</button>
+          <button type="submit" className="btn-primary text-xs px-4 py-2 rounded-xl shadow-lg cursor-pointer">Schedule Event</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+// ── Main Page ──────────────────────────────────────────────────
+export default function AdminProductsEvents() {
+  const { state, addEvent, deleteEvent, addService, deleteService, currentUser } = useCms();
+  const [activeTab, setActiveTab] = useState<"services" | "events">("services");
+  const [addOpen, setAddOpen]     = useState(false);
+
   const isReadOnly = currentUser.role === "contributor";
 
-  // Handle delete service
   const handleDeleteService = (id: string) => {
     if (isReadOnly) return;
-    if (confirm("Are you sure you want to delete this service?")) {
-      const updated = state.services.filter((s) => s.id !== id);
-      updateDraft((prev) => ({ ...prev, services: updated }));
-      publishState(); // auto publish catalog updates
-    }
+    if (!confirm("Delete this service?")) return;
+    deleteService(id);
   };
 
-  // Handle delete event
   const handleDeleteEvent = (id: string) => {
     if (isReadOnly) return;
-    if (confirm("Are you sure you want to delete this event?")) {
-      const updated = state.events.filter((e) => e.id !== id);
-      updateDraft((prev) => ({ ...prev, events: updated }));
-      publishState(); // auto publish catalog updates
-    }
+    if (!confirm("Delete this event?")) return;
+    deleteEvent(id);
   };
 
-  // Submit service form
-  const handleServiceSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isReadOnly) return;
-
-    const newService: Service = {
-      id: `svc-${Date.now()}`,
-      title: serviceForm.title || "Untitled Performance",
-      description: serviceForm.description || "",
-      icon: "Music",
-      color: serviceForm.color || "gold",
-      features: serviceForm.features?.filter(Boolean) || [],
-    };
-
-    updateDraft((prev) => ({
-      ...prev,
-      services: [...prev.services, newService],
-    }));
-    publishState(); // auto publish to live catalog
-
-    setModalOpen(false);
-    setServiceForm({ title: "", description: "", color: "gold", features: ["", ""] });
+  const handleAddService = (data: Omit<Service, "id" | "icon">) => {
+    addService(data);
+    setAddOpen(false);
   };
 
-  // Submit event form
-  const handleEventSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isReadOnly) return;
-
-    const newEvent: Event = {
-      id: `evt-${Date.now()}`,
-      title: eventForm.title || "Untitled Event",
-      description: eventForm.description || "",
-      date: eventForm.date || new Date().toISOString().split("T")[0],
-      venue: eventForm.venue || "Volta Region, Ghana",
-      category: eventForm.category || "performance",
-      imageUrl: eventForm.imageUrl || "/images/WhatsApp Image 2026-06-02 at 10.54.25.jpeg",
-      isFeatured: eventForm.isFeatured || false,
-    };
-
-    updateDraft((prev) => ({
-      ...prev,
-      events: [newEvent, ...prev.events],
-    }));
-    publishState(); // auto publish to live catalog
-
-    setModalOpen(false);
-    setEventForm({
-      title: "",
-      description: "",
-      date: "",
-      venue: "",
-      category: "performance",
-      imageUrl: "/images/WhatsApp Image 2026-06-02 at 10.54.25.jpeg",
-      isFeatured: false,
-    });
+  const handleAddEvent = (data: Omit<Event, "id">) => {
+    addEvent(data);
+    setAddOpen(false);
   };
 
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
-      <div className="flex justify-between items-center bg-white border border-[#E8DDD0] rounded-2xl p-6 shadow-sm">
+    <div className="space-y-6">
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white border border-[#E8DDD0] rounded-2xl p-6 shadow-sm">
         <div>
-          <h1 className="font-display text-2xl font-black text-[#1C1208]">Products & Events Catalog</h1>
-          <p className="text-xs text-[#7A6A57] mt-0.5">
-            Manage your service package pricing, descriptions, and dynamic upcoming event schedules.
-          </p>
+          <p className="text-[9px] font-black uppercase tracking-widest text-[var(--color-heritage-gold)] mb-1">Catalogue</p>
+          <h1 className="font-display text-2xl font-black text-[#1C1208] tracking-tight">Products & Events</h1>
+          <p className="text-xs text-[#7A6A57] mt-1">Manage performance service packages and the upcoming events schedule.</p>
         </div>
-        <button
-          disabled={isReadOnly}
-          onClick={() => setModalOpen(true)}
-          className="btn-primary text-xs flex items-center gap-2 py-2.5 px-4 rounded-xl disabled:opacity-50 cursor-pointer"
-        >
+        <button disabled={isReadOnly} onClick={() => setAddOpen(true)}
+          className="btn-primary flex items-center gap-1.5 text-xs py-2.5 px-4 rounded-xl disabled:opacity-50 cursor-pointer shrink-0">
           <Plus size={14} /> Add {activeTab === "services" ? "Service" : "Event"}
         </button>
       </div>
 
+      {isReadOnly && (
+        <div className="flex items-center gap-2.5 p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700 font-semibold">
+          <AlertTriangle size={14} className="shrink-0" />
+          View-Only: your role cannot add or remove catalogue items.
+        </div>
+      )}
+
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-[#E8DDD0] pb-px">
-        <button
-          onClick={() => setActiveTab("services")}
-          className={`px-4 py-2.5 text-xs font-black capitalize select-none transition-colors border-b-2 cursor-pointer ${
-            activeTab === "services"
-              ? "border-[var(--color-heritage-gold)] text-[var(--color-heritage-gold-dark)]"
-              : "border-transparent text-[#7A6A57] hover:text-[#1C1208]"
-          }`}
-        >
-          Performances & Services ({state.services.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("events")}
-          className={`px-4 py-2.5 text-xs font-black capitalize select-none transition-colors border-b-2 cursor-pointer ${
-            activeTab === "events"
-              ? "border-[var(--color-heritage-gold)] text-[var(--color-heritage-gold-dark)]"
-              : "border-transparent text-[#7A6A57] hover:text-[#1C1208]"
-          }`}
-        >
-          Upcoming Events ({state.events.length})
-        </button>
+      <div className="flex gap-1 p-1 bg-[#FAF7F2] border border-[#E8DDD0] rounded-xl w-fit">
+        {([["services", "Performances & Services"], ["events", "Upcoming Events"]] as const).map(([tab, label]) => (
+          <button key={tab} onClick={() => setActiveTab(tab)}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeTab === tab
+                ? "bg-white shadow-sm text-[#1C1208] border border-[#E8DDD0]"
+                : "text-[#7A6A57] hover:text-[#1C1208]"
+            }`}>
+            {label} ({tab === "services" ? state.services.length : state.events.length})
+          </button>
+        ))}
       </div>
 
-      {/* Grid of Items */}
+      {/* Grid */}
       {activeTab === "services" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {state.services.map((svc) => (
-            <div
-              key={svc.id}
-              className={`bg-white border border-[#E8DDD0] rounded-2xl p-5 shadow-sm flex flex-col justify-between hover:border-[var(--color-heritage-gold)] transition-colors card-${svc.color}`}
-            >
-              <div>
-                <div className="flex justify-between items-start mb-4">
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                      svc.color === "gold"
-                        ? "bg-[var(--color-heritage-gold-light)] text-[var(--color-heritage-gold-dark)]"
-                        : svc.color === "red"
-                        ? "bg-[var(--color-heritage-red-light)] text-[var(--color-heritage-red)]"
-                        : "bg-[var(--color-heritage-green-light)] text-[var(--color-heritage-green)]"
-                    }`}
-                  >
-                    {svc.color} package
-                  </span>
-                  <button
-                    disabled={isReadOnly}
-                    onClick={() => handleDeleteService(svc.id)}
-                    className="p-1.5 rounded-lg hover:bg-[var(--color-heritage-red-light)]/40 text-[#7A6A57] hover:text-[var(--color-heritage-red)] transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </div>
-                <h3 className="font-display font-black text-base text-[#1C1208] mb-2">{svc.title}</h3>
-                <p className="text-xs text-[#7A6A57] leading-relaxed mb-4 font-light">{svc.description}</p>
-              </div>
-
-              <div className="border-t border-[#E8DDD0] pt-4 mt-2">
-                <p className="text-[10px] font-black uppercase text-[#7A6A57] tracking-wider mb-2">Key Features</p>
-                <ul className="space-y-1 text-[11px] text-[#7A6A57] font-medium">
-                  {svc.features.map((f, i) => (
-                    <li key={i} className="flex items-center gap-2">
-                      <span className="w-1 h-1 rounded-full bg-[var(--color-heritage-gold)] shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {state.events.map((evt) => (
-            <div
-              key={evt.id}
-              className="bg-white border border-[#E8DDD0] rounded-2xl p-5 shadow-sm flex flex-col justify-between hover:border-[var(--color-heritage-gold)] transition-all"
-            >
-              <div>
-                <div className="flex justify-between items-start mb-4">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-[#FAF7F2] border border-[#E8DDD0] text-[#7A6A57]">
-                    {evt.category}
-                  </span>
-                  <div className="flex gap-1">
-                    <button
-                      disabled={isReadOnly}
-                      onClick={() => handleDeleteEvent(evt.id)}
-                      className="p-1.5 rounded-lg hover:bg-[var(--color-heritage-red-light)]/40 text-[#7A6A57] hover:text-[var(--color-heritage-red)] transition-all cursor-pointer disabled:opacity-50"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                </div>
-                <h3 className="font-display font-black text-base text-[#1C1208] mb-2">{evt.title}</h3>
-                <p className="text-xs text-[#7A6A57] leading-relaxed mb-4 line-clamp-3 font-light">{evt.description}</p>
-              </div>
-
-              <div className="border-t border-[#E8DDD0] pt-4 mt-2 space-y-1.5 text-[10px] text-[#7A6A57] font-semibold">
-                <div className="flex items-center gap-2">
-                  <Calendar size={12} className="text-[var(--color-heritage-gold)]" />
-                  <span>Date: {evt.date}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Tag size={12} className="text-[var(--color-heritage-gold)]" />
-                  <span>Venue: {evt.venue}</span>
-                </div>
-                {evt.isFeatured && (
-                  <span className="badge badge-gold bg-[var(--color-heritage-gold-light)]/80 text-[8px] mt-1 shadow-none inline-block">
-                    ★ Featured Event
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ── Add Item Modal ── */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-sm p-4">
-          <div className="bg-white border border-[#E8DDD0] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-up">
-            {/* Header */}
-            <div className="flex justify-between items-center p-5 border-b border-[#E8DDD0]">
-              <h3 className="font-display font-black text-lg text-[#1C1208]">
-                Add New {activeTab === "services" ? "Performance Service" : "Upcoming Event"}
-              </h3>
-              <button onClick={() => setModalOpen(false)} className="text-[#7A6A57] hover:text-[#1C1208] transition-colors">
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Form */}
-            {activeTab === "services" ? (
-              <form onSubmit={handleServiceSubmit} className="p-5 space-y-4 text-xs">
-                <div>
-                  <label className="form-label font-bold text-[#1C1208] mb-1.5 block">Service Title *</label>
-                  <input
-                    required
-                    type="text"
-                    placeholder="e.g. Masterclass Drumming Program"
-                    className="form-input text-xs"
-                    value={serviceForm.title}
-                    onChange={(e) => setServiceForm({ ...serviceForm, title: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="form-label font-bold text-[#1C1208] mb-1.5 block">Description *</label>
-                  <textarea
-                    required
-                    rows={3}
-                    placeholder="Provide pricing, duration, and performance specs..."
-                    className="form-input text-xs resize-none"
-                    value={serviceForm.description}
-                    onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="form-label font-bold text-[#1C1208] mb-1.5 block">Accent Color Profile *</label>
-                    <select
-                      className="form-input text-xs"
-                      value={serviceForm.color}
-                      onChange={(e) => setServiceForm({ ...serviceForm, color: e.target.value as any })}
-                    >
-                      <option value="gold">Gold Accent</option>
-                      <option value="red">Red Accent</option>
-                      <option value="green">Green Accent</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="form-label font-bold text-[#1C1208] mb-1.5 block">Key Features (max 2) *</label>
-                  <div className="space-y-2">
-                    <input
-                      required
-                      type="text"
-                      placeholder="Feature 1 (e.g. 24-member troupe)"
-                      className="form-input text-xs"
-                      value={serviceForm.features?.[0] || ""}
-                      onChange={(e) => {
-                        const feats = [...(serviceForm.features || [])];
-                        feats[0] = e.target.value;
-                        setServiceForm({ ...serviceForm, features: feats });
-                      }}
-                    />
-                    <input
-                      required
-                      type="text"
-                      placeholder="Feature 2 (e.g. Traditional kente costumes)"
-                      className="form-input text-xs"
-                      value={serviceForm.features?.[1] || ""}
-                      onChange={(e) => {
-                        const feats = [...(serviceForm.features || [])];
-                        feats[1] = e.target.value;
-                        setServiceForm({ ...serviceForm, features: feats });
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-[#E8DDD0] flex justify-end gap-2.5">
-                  <button type="button" onClick={() => setModalOpen(false)} className="btn-outline text-xs px-4 py-2 rounded-xl">
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn-primary text-xs px-4 py-2 rounded-xl shadow-lg">
-                    Create Service
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <form onSubmit={handleEventSubmit} className="p-5 space-y-4 text-xs">
-                <div>
-                  <label className="form-label font-bold text-[#1C1208] mb-1.5 block">Event Title *</label>
-                  <input
-                    required
-                    type="text"
-                    placeholder="e.g. Hogbetsotso Festival Gala"
-                    className="form-input text-xs"
-                    value={eventForm.title}
-                    onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="form-label font-bold text-[#1C1208] mb-1.5 block">Description *</label>
-                  <textarea
-                    required
-                    rows={3}
-                    placeholder="Outline performance details, tickets, and highlights..."
-                    className="form-input text-xs resize-none"
-                    value={eventForm.description}
-                    onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="form-label font-bold text-[#1C1208] mb-1.5 block">Event Date *</label>
-                    <input
-                      required
-                      type="date"
-                      className="form-input text-xs"
-                      value={eventForm.date}
-                      onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="form-label font-bold text-[#1C1208] mb-1.5 block">Category *</label>
-                    <select
-                      className="form-input text-xs"
-                      value={eventForm.category}
-                      onChange={(e) => setEventForm({ ...eventForm, category: e.target.value as any })}
-                    >
-                      <option value="performance">Stage Performance</option>
-                      <option value="festival">Cultural Festival</option>
-                      <option value="workshop">Interactive Workshop</option>
-                      <option value="exhibition">Exhibition Showcase</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="form-label font-bold text-[#1C1208] mb-1.5 block">Venue Location *</label>
-                  <input
-                    required
-                    type="text"
-                    placeholder="e.g. Volta Regional Museum, Ho"
-                    className="form-input text-xs"
-                    value={eventForm.venue}
-                    onChange={(e) => setEventForm({ ...eventForm, venue: e.target.value })}
-                  />
-                </div>
-
-                <div className="flex items-center gap-2 p-1.5 bg-[#FAF7F2] rounded-xl border border-[#E8DDD0]">
-                  <input
-                    type="checkbox"
-                    id="evt-featured"
-                    className="w-4 h-4 accent-[var(--color-heritage-gold)]"
-                    checked={eventForm.isFeatured}
-                    onChange={(e) => setEventForm({ ...eventForm, isFeatured: e.target.checked })}
-                  />
-                  <label htmlFor="evt-featured" className="font-bold text-[#1c1208]">
-                    Pin as Featured Event (Highlights at top of Events page)
-                  </label>
-                </div>
-
-                <div className="pt-3 border-t border-[#E8DDD0] flex justify-end gap-2.5">
-                  <button type="button" onClick={() => setModalOpen(false)} className="btn-outline text-xs px-4 py-2 rounded-xl">
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn-primary text-xs px-4 py-2 rounded-xl shadow-lg">
-                    Schedule Event
-                  </button>
-                </div>
-              </form>
-            )}
+        state.services.length === 0 ? (
+          <EmptyState icon={Music} label="No services yet" sub="Add your first performance package above" />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {state.services.map((svc) => (
+              <ServiceCard key={svc.id} svc={svc} isReadOnly={isReadOnly} onDelete={handleDeleteService} />
+            ))}
           </div>
-        </div>
+        )
+      ) : (
+        state.events.length === 0 ? (
+          <EmptyState icon={Calendar} label="No events scheduled" sub="Schedule your first event above" />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {state.events.map((evt) => (
+              <EventCard key={evt.id} evt={evt} isReadOnly={isReadOnly} onDelete={handleDeleteEvent} />
+            ))}
+          </div>
+        )
       )}
+
+      {/* Modals */}
+      {addOpen && activeTab === "services" && <AddServiceModal onClose={() => setAddOpen(false)} onAdd={handleAddService} />}
+      {addOpen && activeTab === "events"   && <AddEventModal   onClose={() => setAddOpen(false)} onAdd={handleAddEvent} />}
+    </div>
+  );
+}
+
+function EmptyState({ icon: Icon, label, sub }: { icon: React.ElementType; label: string; sub: string }) {
+  return (
+    <div className="bg-white border border-dashed border-[#E8DDD0] rounded-2xl p-16 flex flex-col items-center text-center gap-3">
+      <div className="w-12 h-12 rounded-2xl bg-[#FAF7F2] border border-[#E8DDD0] flex items-center justify-center text-[#C8B99A]">
+        <Icon size={22} />
+      </div>
+      <p className="font-display font-black text-sm text-[#1C1208]">{label}</p>
+      <p className="text-xs text-[#7A6A57] font-light">{sub}</p>
     </div>
   );
 }

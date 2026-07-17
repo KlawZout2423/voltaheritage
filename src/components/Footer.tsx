@@ -20,7 +20,7 @@ const quickLinks = [
   { label: "In Orbit (Upcoming Events)", href: "/events" },
   { label: "Gallery (Photos & Videos)", href: "/gallery" },
   { label: "Offerings (Our Services)", href: "/services" },
-  { label: "Blue Spotlight (Latest News)", href: "/news" },
+  { label: "Our Blog & Vlog", href: "/blog" },
   { label: "Connect (Contact & Book)", href: "/contact" },
 ];
 
@@ -155,14 +155,7 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
-              <li>
-                <Link
-                  href="/admin"
-                  className="text-sm text-white/30 hover:text-white/60 transition-colors flex items-center gap-1"
-                >
-                  Admin Login <ExternalLink size={10} />
-                </Link>
-              </li>
+              {/* Admin link removed in favor of logo easter egg trigger */}
             </ul>
           </div>
 

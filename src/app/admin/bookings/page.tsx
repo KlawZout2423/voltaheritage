@@ -1,286 +1,369 @@
 "use client";
 
-import React, { useState } from "react";
-import { Mail, Phone, Calendar, MapPin, Users as UsersIcon, Clock, CheckCircle, XCircle, Trash2, X } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import {
+  Mail, Phone, Calendar, MapPin, Users as UsersIcon,
+  Clock, CheckCircle, XCircle, Trash2, X, Search,
+  ChevronRight, MessageSquare, AlertTriangle, Filter,
+} from "lucide-react";
 import { useCms, Booking } from "@/context/CmsContext";
 
+// ── Status config ──────────────────────────────────────────────
+const statusConfig: Record<Booking["status"], {
+  label: string; icon: React.ElementType;
+  bg: string; text: string; border: string; dot: string;
+}> = {
+  pending:   { label: "Pending",   icon: Clock,       bg: "bg-amber-50",   text: "text-amber-700",   border: "border-amber-200",   dot: "bg-amber-400"   },
+  confirmed: { label: "Confirmed", icon: CheckCircle, bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", dot: "bg-emerald-500" },
+  completed: { label: "Completed", icon: CheckCircle, bg: "bg-slate-100",  text: "text-slate-600",   border: "border-slate-200",   dot: "bg-slate-400"   },
+  cancelled: { label: "Cancelled", icon: XCircle,     bg: "bg-red-50",     text: "text-red-700",     border: "border-red-200",     dot: "bg-red-400"     },
+};
+
+const enquiryLabel: Record<string, string> = {
+  performance: "Stage Performance",
+  workshop:    "Workshop",
+  tourism:     "Cultural Tourism",
+  education:   "Education",
+  other:       "General Enquiry",
+};
+
+function formatDate(iso?: string) {
+  if (!iso) return "Not specified";
+  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+}
+
+function formatCreated(iso: string) {
+  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+// ── Status Badge ───────────────────────────────────────────────
+function StatusBadge({ status }: { status: Booking["status"] }) {
+  const cfg = statusConfig[status];
+  const Icon = cfg.icon;
+  return (
+    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${cfg.bg} ${cfg.text} ${cfg.border}`}>
+      <Icon size={9} strokeWidth={2.5} /> {cfg.label}
+    </span>
+  );
+}
+
+// ── Avatar initials ────────────────────────────────────────────
+function Avatar({ name }: { name: string }) {
+  const initials = name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+  return (
+    <div className="w-9 h-9 rounded-full bg-[var(--color-heritage-gold-light)] text-[var(--color-heritage-gold-dark)] flex items-center justify-center text-[11px] font-black shrink-0">
+      {initials}
+    </div>
+  );
+}
+
+// ── Detail Drawer ──────────────────────────────────────────────
+function BookingDrawer({ booking, isReadOnly, onClose, onStatus, onDelete }: {
+  booking: Booking; isReadOnly: boolean;
+  onClose: () => void;
+  onStatus: (id: string, s: Booking["status"]) => void;
+  onDelete: (id: string) => void;
+}) {
+  const cfg = statusConfig[booking.status];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-end bg-black/60 backdrop-blur-sm">
+      {/* Backdrop */}
+      <div className="absolute inset-0" onClick={onClose} />
+
+      {/* Drawer panel */}
+      <div className="relative w-full sm:max-w-lg h-full sm:h-auto sm:max-h-[92vh] bg-white shadow-2xl flex flex-col rounded-t-3xl sm:rounded-l-3xl sm:rounded-r-none overflow-hidden">
+        {/* Header */}
+        <div className="flex items-start justify-between p-6 border-b border-[#E8DDD0] shrink-0">
+          <div className="flex items-center gap-3">
+            <Avatar name={booking.name} />
+            <div>
+              <h3 className="font-display font-black text-lg text-[#1C1208] leading-tight">{booking.name}</h3>
+              <p className="text-[10px] text-[#7A6A57] font-medium mt-0.5">{formatCreated(booking.createdAt)}</p>
+            </div>
+          </div>
+          <button onClick={onClose}
+            className="w-8 h-8 rounded-xl bg-[#FAF7F2] hover:bg-[#E8DDD0] flex items-center justify-center text-[#7A6A57] hover:text-[#1C1208] transition-colors cursor-pointer shrink-0">
+            <X size={15} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="overflow-y-auto flex-1 p-6 space-y-5">
+
+          {/* Status + actions */}
+          <div className="flex items-center justify-between p-3.5 bg-[#FAF7F2] rounded-xl border border-[#E8DDD0]">
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${cfg.dot} ${booking.status === "pending" ? "animate-pulse" : ""}`} />
+              <StatusBadge status={booking.status} />
+            </div>
+            {!isReadOnly && (
+              <div className="flex gap-1.5">
+                <button
+                  disabled={booking.status === "confirmed" || booking.status === "completed"}
+                  onClick={() => onStatus(booking.id, "confirmed")}
+                  className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-30">
+                  <CheckCircle size={11} /> Approve
+                </button>
+                <button
+                  disabled={booking.status === "completed"}
+                  onClick={() => onStatus(booking.id, "completed")}
+                  className="flex items-center gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-30">
+                  Mark Done
+                </button>
+                <button
+                  disabled={booking.status === "cancelled"}
+                  onClick={() => onStatus(booking.id, "cancelled")}
+                  className="flex items-center gap-1 bg-white border border-[#E8DDD0] hover:bg-[#FAF7F2] text-[#1C1208]/70 text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-30">
+                  <XCircle size={11} /> Cancel
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Contact */}
+          <section className="space-y-2">
+            <h4 className="text-[9px] font-black uppercase tracking-widest text-[#A8957E]">Contact Details</h4>
+            <a href={`mailto:${booking.email}`}
+              className="flex items-center gap-2 text-[11px] text-[#3D3020] font-semibold hover:text-[var(--color-heritage-gold-dark)] transition-colors">
+              <Mail size={13} className="text-[var(--color-heritage-gold)] shrink-0" /> {booking.email}
+            </a>
+            {booking.phone && (
+              <a href={`tel:${booking.phone}`}
+                className="flex items-center gap-2 text-[11px] text-[#3D3020] font-semibold hover:text-[var(--color-heritage-gold-dark)] transition-colors">
+                <Phone size={13} className="text-[var(--color-heritage-gold)] shrink-0" /> {booking.phone}
+              </a>
+            )}
+          </section>
+
+          {/* Event details */}
+          <section className="grid grid-cols-2 gap-4">
+            <div>
+              <h4 className="text-[9px] font-black uppercase tracking-widest text-[#A8957E] mb-1.5">Enquiry Type</h4>
+              <p className="text-[11px] font-semibold text-[#3D3020] capitalize">{enquiryLabel[booking.enquiryType] ?? booking.enquiryType}</p>
+            </div>
+            <div>
+              <h4 className="text-[9px] font-black uppercase tracking-widest text-[#A8957E] mb-1.5">Event Date</h4>
+              <p className="text-[11px] font-semibold text-[#3D3020]">{formatDate(booking.eventDate)}</p>
+            </div>
+            {booking.venueLocation && (
+              <div className="col-span-2">
+                <h4 className="text-[9px] font-black uppercase tracking-widest text-[#A8957E] mb-1.5">Venue</h4>
+                <div className="flex items-start gap-1.5 text-[11px] text-[#3D3020] font-semibold">
+                  <MapPin size={12} className="text-[var(--color-heritage-gold)] shrink-0 mt-0.5" />
+                  {booking.venueLocation}
+                </div>
+              </div>
+            )}
+            {booking.audienceSize && (
+              <div>
+                <h4 className="text-[9px] font-black uppercase tracking-widest text-[#A8957E] mb-1.5">Audience</h4>
+                <div className="flex items-center gap-1.5 text-[11px] text-[#3D3020] font-semibold">
+                  <UsersIcon size={12} className="text-[var(--color-heritage-gold)]" />
+                  {booking.audienceSize}
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Subject + Message */}
+          <section className="space-y-2">
+            <h4 className="text-[9px] font-black uppercase tracking-widest text-[#A8957E]">Subject</h4>
+            <p className="text-[11px] font-bold text-[#1C1208]">{booking.subject}</p>
+          </section>
+          <section className="space-y-2">
+            <h4 className="text-[9px] font-black uppercase tracking-widest text-[#A8957E]">Message</h4>
+            <div className="bg-[#FAF7F2] border border-[#E8DDD0] rounded-xl p-4 text-[11px] text-[#3D3020] leading-relaxed font-light whitespace-pre-wrap">
+              {booking.message}
+            </div>
+          </section>
+        </div>
+
+        {/* Footer */}
+        <div className="p-5 border-t border-[#E8DDD0] flex justify-between items-center shrink-0">
+          <button disabled={isReadOnly} onClick={() => onDelete(booking.id)}
+            className="flex items-center gap-1.5 text-[11px] font-bold text-red-600 hover:bg-red-50 px-3 py-2 rounded-xl transition-all cursor-pointer disabled:opacity-30">
+            <Trash2 size={13} /> Delete Request
+          </button>
+          <button onClick={onClose} className="btn-outline text-xs px-4 py-2 rounded-xl cursor-pointer">Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Page ──────────────────────────────────────────────────
 export default function AdminBookings() {
   const { state, updateBookingStatus, deleteBooking, currentUser } = useCms();
-  const [filter, setFilter] = useState<"all" | Booking["status"]>("all");
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-
-  const bookings = state.bookings;
-  const filteredBookings = filter === "all" ? bookings : bookings.filter((b) => b.status === filter);
+  const [filter, setFilter]   = useState<"all" | Booking["status"]>("all");
+  const [search, setSearch]   = useState("");
+  const [selected, setSelected] = useState<Booking | null>(null);
 
   const isReadOnly = currentUser.role === "contributor";
 
-  const handleStatusChange = (id: string, status: Booking["status"]) => {
+  const filtered = useMemo(() => {
+    let list = state.bookings;
+    if (filter !== "all") list = list.filter((b) => b.status === filter);
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter((b) =>
+        b.name.toLowerCase().includes(q) ||
+        b.email.toLowerCase().includes(q) ||
+        b.subject.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [state.bookings, filter, search]);
+
+  const handleStatus = (id: string, status: Booking["status"]) => {
     if (isReadOnly) return;
     updateBookingStatus(id, status);
-    // Sync selected booking modal details
-    if (selectedBooking && selectedBooking.id === id) {
-      setSelectedBooking({ ...selectedBooking, status });
-    }
+    if (selected?.id === id) setSelected((prev) => prev ? { ...prev, status } : null);
   };
 
   const handleDelete = (id: string) => {
     if (isReadOnly) return;
-    if (confirm("Are you sure you want to delete this booking request from the database?")) {
-      deleteBooking(id);
-      setSelectedBooking(null);
-    }
+    if (!confirm("Permanently delete this booking request?")) return;
+    deleteBooking(id);
+    setSelected(null);
   };
 
+  const tabs = (["all", "pending", "confirmed", "completed", "cancelled"] as const).map((s) => ({
+    key: s,
+    label: s === "all" ? "All" : statusConfig[s].label,
+    count: s === "all" ? state.bookings.length : state.bookings.filter((b) => b.status === s).length,
+    dot: s !== "all" ? statusConfig[s].dot : undefined,
+  }));
+
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
+    <div className="space-y-6">
+
+      {/* Header */}
       <div className="bg-white border border-[#E8DDD0] rounded-2xl p-6 shadow-sm">
-        <h1 className="font-display text-2xl font-black text-[#1C1208]">Bookings & Inquiries Manager</h1>
-        <p className="text-xs text-[#7A6A57] mt-0.5">
-          Process performance reservations, workshop signups, and client messages from the contact form.
-        </p>
+        <p className="text-[9px] font-black uppercase tracking-widest text-[var(--color-heritage-gold)] mb-1">Operations</p>
+        <h1 className="font-display text-2xl font-black text-[#1C1208] tracking-tight">Bookings & Inquiries</h1>
+        <p className="text-xs text-[#7A6A57] mt-1">Process performance reservations, workshop signups, and client messages.</p>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex overflow-x-auto no-scrollbar gap-1.5 border-b border-[#E8DDD0] pb-px">
-        {["all", "pending", "confirmed", "completed", "cancelled"].map((f) => {
-          const count = f === "all" ? bookings.length : bookings.filter((b) => b.status === f).length;
-          return (
-            <button
-              key={f}
-              onClick={() => setFilter(f as any)}
-              className={`px-4 py-2.5 text-xs font-black capitalize select-none transition-colors border-b-2 whitespace-nowrap cursor-pointer ${
-                filter === f
-                  ? "border-[var(--color-heritage-gold)] text-[var(--color-heritage-gold-dark)]"
-                  : "border-transparent text-[#7A6A57] hover:text-[#1C1208]"
-              }`}
-            >
-              {f} ({count})
+      {isReadOnly && (
+        <div className="flex items-center gap-2.5 p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700 font-semibold">
+          <AlertTriangle size={14} className="shrink-0" /> View-Only: your role cannot update or delete bookings.
+        </div>
+      )}
+
+      {/* Filter bar */}
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+        {/* Status tabs */}
+        <div className="flex gap-1 p-1 bg-[#FAF7F2] border border-[#E8DDD0] rounded-xl overflow-x-auto no-scrollbar shrink-0">
+          {tabs.map(({ key, label, count, dot }) => (
+            <button key={key} onClick={() => setFilter(key)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
+                filter === key
+                  ? "bg-white shadow-sm text-[#1C1208] border border-[#E8DDD0]"
+                  : "text-[#7A6A57] hover:text-[#1C1208]"
+              }`}>
+              {dot && <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} />}
+              {label}
+              <span className={`ml-0.5 text-[9px] font-black ${filter === key ? "text-[#7A6A57]" : "text-[#A8957E]"}`}>
+                ({count})
+              </span>
             </button>
-          );
-        })}
+          ))}
+        </div>
+
+        {/* Search */}
+        <div className="relative flex-1 max-w-xs">
+          <Search size={13} className="absolute inset-y-0 left-3 my-auto text-[#A8957E] pointer-events-none" />
+          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search name, email, subject…"
+            className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-[#E8DDD0] text-[11px] placeholder:text-[#A8957E] focus:outline-none focus:ring-2 focus:ring-[var(--color-heritage-gold)]/25 focus:border-[var(--color-heritage-gold)] transition-all text-[#1C1208]" />
+        </div>
       </div>
 
-      {/* Bookings Table card */}
+      {/* Table */}
       <div className="bg-white border border-[#E8DDD0] rounded-2xl shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="bg-[#FAF7F2] text-[#7A6A57] font-black uppercase tracking-wider text-[10px] border-b border-[#E8DDD0]">
-                <th className="p-4">Client Contact</th>
-                <th className="p-4">Enquiry Type</th>
-                <th className="p-4">Subject</th>
-                <th className="p-4">Event Date</th>
-                <th className="p-4">Status</th>
-                <th className="p-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E8DDD0]">
-              {filteredBookings.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="p-12 text-center text-xs text-[#7A6A57] font-light">
-                    No booking inquiries found matching the selected status.
-                  </td>
+        {filtered.length === 0 ? (
+          <div className="p-16 flex flex-col items-center gap-3 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#FAF7F2] border border-[#E8DDD0] flex items-center justify-center text-[#C8B99A]">
+              <MessageSquare size={22} />
+            </div>
+            <p className="font-display font-black text-sm text-[#1C1208]">No bookings found</p>
+            <p className="text-xs text-[#7A6A57] font-light">Try changing the filter or search term</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-[#FAF7F2] text-[#7A6A57] font-black uppercase tracking-wider text-[10px] border-b border-[#E8DDD0]">
+                  <th className="px-5 py-3">Client</th>
+                  <th className="px-5 py-3 hidden sm:table-cell">Type</th>
+                  <th className="px-5 py-3 hidden md:table-cell">Subject</th>
+                  <th className="px-5 py-3 hidden lg:table-cell">Date</th>
+                  <th className="px-5 py-3">Status</th>
+                  <th className="px-5 py-3 text-right">Actions</th>
                 </tr>
-              ) : (
-                filteredBookings.map((b) => (
-                  <tr
-                    key={b.id}
-                    onClick={() => setSelectedBooking(b)}
-                    className="hover:bg-[#FAF7F2]/50 transition-colors cursor-pointer"
-                  >
-                    <td className="p-4">
-                      <p className="font-bold text-[#1C1208]">{b.name}</p>
-                      <p className="text-[10px] text-[#7A6A57] mt-0.5 flex items-center gap-1">
-                        <Mail size={10} /> {b.email}
-                      </p>
+              </thead>
+              <tbody className="divide-y divide-[#E8DDD0]">
+                {filtered.map((b) => (
+                  <tr key={b.id}
+                    onClick={() => setSelected(b)}
+                    className="hover:bg-[#FAF7F2]/60 transition-colors cursor-pointer group">
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2.5">
+                        <Avatar name={b.name} />
+                        <div>
+                          <p className="font-bold text-[#1C1208] leading-tight">{b.name}</p>
+                          <p className="text-[10px] text-[#7A6A57]">{b.email}</p>
+                        </div>
+                      </div>
                     </td>
-                    <td className="p-4 capitalize font-semibold">{b.enquiryType}</td>
-                    <td className="p-4 max-w-xs truncate font-medium text-[#7A6A57]">{b.subject}</td>
-                    <td className="p-4 font-bold text-[#7A6A57]">{b.eventDate || "TBD"}</td>
-                    <td className="p-4">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                          b.status === "pending"
-                            ? "bg-[var(--color-heritage-gold-light)] text-[var(--color-heritage-gold-dark)] border border-yellow-200"
-                            : b.status === "confirmed"
-                            ? "bg-[var(--color-heritage-green-light)] text-[var(--color-heritage-green)] border border-green-200"
-                            : b.status === "completed"
-                            ? "bg-slate-100 text-slate-700 border border-slate-200"
-                            : "bg-[var(--color-heritage-red-light)] text-[var(--color-heritage-red)] border border-red-200"
-                        }`}
-                      >
-                        {b.status}
-                      </span>
+                    <td className="px-5 py-3.5 hidden sm:table-cell text-[#7A6A57] font-semibold capitalize">
+                      {enquiryLabel[b.enquiryType] ?? b.enquiryType}
                     </td>
-                    <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex justify-end gap-1">
-                        <button
-                          disabled={isReadOnly}
-                          onClick={() => handleDelete(b.id)}
-                          className="p-1.5 rounded-lg hover:bg-[var(--color-heritage-red-light)]/40 text-[#7A6A57] hover:text-[var(--color-heritage-red)] transition-all cursor-pointer disabled:opacity-50"
-                          title="Delete Request"
-                        >
-                          <Trash2 size={13} />
+                    <td className="px-5 py-3.5 hidden md:table-cell max-w-[200px]">
+                      <p className="truncate text-[#7A6A57] font-medium">{b.subject}</p>
+                    </td>
+                    <td className="px-5 py-3.5 hidden lg:table-cell font-semibold text-[#7A6A57]">
+                      {b.eventDate ? new Date(b.eventDate).toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric"}) : "TBD"}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <StatusBadge status={b.status} />
+                    </td>
+                    <td className="px-5 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex justify-end items-center gap-1">
+                        {b.status === "pending" && !isReadOnly && (
+                          <button onClick={() => handleStatus(b.id, "confirmed")}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-bold px-2.5 py-1 rounded-lg shadow-sm transition-colors cursor-pointer">
+                            Approve
+                          </button>
+                        )}
+                        <button onClick={() => setSelected(b)}
+                          className="p-1.5 rounded-lg text-[#A8957E] hover:text-[#1C1208] hover:bg-[#FAF7F2] transition-colors cursor-pointer opacity-0 group-hover:opacity-100">
+                          <ChevronRight size={13} />
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <div className="px-5 py-3 bg-[#FAF7F2]/50 border-t border-[#E8DDD0] flex justify-between text-[10px] text-[#A8957E] font-medium">
+          <span>{filtered.length} result{filtered.length !== 1 ? "s" : ""}</span>
+          <span>Public submissions from the Connect page appear here automatically</span>
         </div>
       </div>
 
-      {/* ── Booking Inspection Drawer Modal ── */}
-      {selectedBooking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-lg h-full bg-white shadow-2xl flex flex-col justify-between overflow-y-auto animate-slide-in-left p-6">
-            <div className="space-y-6">
-              {/* Header */}
-              <div className="flex justify-between items-start border-b border-[#E8DDD0] pb-4">
-                <div>
-                  <span className="text-[9px] uppercase font-black tracking-widest text-[#7A6A57]">
-                    Inquiry Inspection
-                  </span>
-                  <h3 className="font-display font-black text-xl text-[#1C1208] mt-1">
-                    Request Details
-                  </h3>
-                </div>
-                <button
-                  onClick={() => setSelectedBooking(null)}
-                  className="w-8 h-8 rounded-full bg-[#FAF7F2] hover:bg-[#E8DDD0]/50 flex items-center justify-center text-[#7A6A57] hover:text-[#1C1208] transition-colors cursor-pointer"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              {/* Status Ribbon */}
-              <div className="flex items-center justify-between p-4 rounded-xl bg-[#FAF7F2] border border-[#E8DDD0]">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[var(--color-heritage-gold)] animate-pulse" />
-                  <span className="text-xs font-bold text-[#1C1208]">Status:</span>
-                  <span className="text-xs font-black uppercase text-[var(--color-heritage-gold-dark)]">
-                    {selectedBooking.status}
-                  </span>
-                </div>
-                <div className="flex gap-1.5">
-                  <button
-                    disabled={isReadOnly || selectedBooking.status === "confirmed"}
-                    onClick={() => handleStatusChange(selectedBooking.id, "confirmed")}
-                    className="flex items-center gap-1 bg-[var(--color-heritage-green)] text-white text-[10px] font-bold px-2 py-1 rounded-lg shadow-sm transition-colors cursor-pointer disabled:opacity-50"
-                  >
-                    <CheckCircle size={10} /> Approve
-                  </button>
-                  <button
-                    disabled={isReadOnly || selectedBooking.status === "cancelled"}
-                    onClick={() => handleStatusChange(selectedBooking.id, "cancelled")}
-                    className="flex items-center gap-1 bg-white border border-[#E8DDD0] text-[#1C1208]/70 text-[10px] font-bold px-2 py-1 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
-                  >
-                    <XCircle size={10} /> Cancel
-                  </button>
-                </div>
-              </div>
-
-              {/* Client Card */}
-              <div className="space-y-3.5 text-xs">
-                <div>
-                  <h4 className="font-black text-[#1C1208] uppercase tracking-wider text-[9px] mb-1">
-                    Client Contact
-                  </h4>
-                  <p className="font-bold text-sm text-[#1C1208]">{selectedBooking.name}</p>
-                  <div className="space-y-1 mt-1 text-[#7A6A57] font-semibold">
-                    <p className="flex items-center gap-2">
-                      <Mail size={12} className="text-[var(--color-heritage-gold)]" />
-                      {selectedBooking.email}
-                    </p>
-                    {selectedBooking.phone && (
-                      <p className="flex items-center gap-2">
-                        <Phone size={12} className="text-[var(--color-heritage-gold)]" />
-                        {selectedBooking.phone}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 border-t border-[#E8DDD0] pt-4">
-                  <div>
-                    <h4 className="font-black text-[#1C1208] uppercase tracking-wider text-[9px] mb-1">
-                      Event Date
-                    </h4>
-                    <p className="font-semibold text-xs text-[#7A6A57]">
-                      {selectedBooking.eventDate || "Not Specified"}
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-black text-[#1C1208] uppercase tracking-wider text-[9px] mb-1">
-                      Enquiry Category
-                    </h4>
-                    <p className="font-semibold text-xs text-[#7A6A57] capitalize">
-                      {selectedBooking.enquiryType}
-                    </p>
-                  </div>
-                </div>
-
-                {selectedBooking.venueLocation && (
-                  <div className="border-t border-[#E8DDD0] pt-4">
-                    <h4 className="font-black text-[#1C1208] uppercase tracking-wider text-[9px] mb-1">
-                      Venue Location
-                    </h4>
-                    <p className="font-semibold text-xs text-[#7A6A57]">
-                      {selectedBooking.venueLocation}
-                    </p>
-                  </div>
-                )}
-
-                {selectedBooking.audienceSize && (
-                  <div className="border-t border-[#E8DDD0] pt-4">
-                    <h4 className="font-black text-[#1C1208] uppercase tracking-wider text-[9px] mb-1">
-                      Audience Size
-                    </h4>
-                    <p className="font-semibold text-xs text-[#7A6A57]">
-                      {selectedBooking.audienceSize} people
-                    </p>
-                  </div>
-                )}
-
-                <div className="border-t border-[#E8DDD0] pt-4">
-                  <h4 className="font-black text-[#1C1208] uppercase tracking-wider text-[9px] mb-1">
-                    Subject Heading
-                  </h4>
-                  <p className="font-bold text-xs text-[#1c1208]">{selectedBooking.subject}</p>
-                </div>
-
-                <div className="border-t border-[#E8DDD0] pt-4">
-                  <h4 className="font-black text-[#1C1208] uppercase tracking-wider text-[9px] mb-1">
-                    Client Description / Message
-                  </h4>
-                  <div className="bg-[#FAF7F2] p-4 rounded-xl border border-[#E8DDD0] text-[#7A6A57] leading-relaxed font-light whitespace-pre-wrap">
-                    {selectedBooking.message}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer buttons */}
-            <div className="border-t border-[#E8DDD0] pt-4 mt-6 flex justify-between items-center">
-              <button
-                disabled={isReadOnly}
-                onClick={() => handleDelete(selectedBooking.id)}
-                className="flex items-center gap-1.5 text-xs font-bold text-[var(--color-heritage-red)] hover:bg-[var(--color-heritage-red-light)]/40 p-2 rounded-xl transition-all cursor-pointer disabled:opacity-50"
-              >
-                <Trash2 size={13} /> Delete Request
-              </button>
-              <button
-                onClick={() => setSelectedBooking(null)}
-                className="btn-outline text-xs px-4 py-2 rounded-xl cursor-pointer"
-              >
-                Close details
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Detail Drawer */}
+      {selected && (
+        <BookingDrawer
+          booking={selected}
+          isReadOnly={isReadOnly}
+          onClose={() => setSelected(null)}
+          onStatus={handleStatus}
+          onDelete={handleDelete}
+        />
       )}
     </div>
   );

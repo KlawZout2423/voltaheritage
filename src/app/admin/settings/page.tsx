@@ -1,189 +1,212 @@
 "use client";
 
 import React, { useState } from "react";
-import { Save, ShieldCheck } from "lucide-react";
+import { Save, Globe, Phone, Mail, FileText, Palette, CheckCircle2, AlertTriangle, Info } from "lucide-react";
 import { useCms } from "@/context/CmsContext";
 
+// ── Section wrapper ────────────────────────────────────────────
+function SettingsSection({ title, desc, icon: Icon, children }: {
+  title: string; desc: string; icon: React.ElementType; children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-white border border-[#E8DDD0] rounded-2xl shadow-sm overflow-hidden">
+      <div className="px-6 py-5 border-b border-[#E8DDD0] flex items-start gap-3">
+        <div className="w-9 h-9 rounded-xl bg-[var(--color-heritage-gold-light)] flex items-center justify-center text-[var(--color-heritage-gold-dark)] shrink-0">
+          <Icon size={16} />
+        </div>
+        <div>
+          <h3 className="font-display font-black text-sm text-[#1C1208]">{title}</h3>
+          <p className="text-[10px] text-[#7A6A57] mt-0.5 font-light">{desc}</p>
+        </div>
+      </div>
+      <div className="p-6 space-y-4">{children}</div>
+    </div>
+  );
+}
+
+// ── Field ──────────────────────────────────────────────────────
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-[10px] font-black uppercase tracking-widest text-[#7A6A57] block">{label}</label>
+      {hint && <p className="text-[10px] text-[#A8957E] font-light">{hint}</p>}
+      {children}
+    </div>
+  );
+}
+
+// ── Color swatch button ────────────────────────────────────────
+const accentMeta = {
+  gold: {
+    label: "Heritage Gold",
+    hex: "#C8870A",
+    bg: "bg-[var(--color-heritage-gold)]",
+    ring: "ring-[var(--color-heritage-gold)]",
+    selectedBg: "bg-[var(--color-heritage-gold-light)] border-[var(--color-heritage-gold)]",
+    selectedText: "text-[var(--color-heritage-gold-dark)]",
+    desc: "Warm gold — primary brand tone",
+  },
+  red: {
+    label: "Heritage Red",
+    hex: "#B91C1C",
+    bg: "bg-[var(--color-heritage-red)]",
+    ring: "ring-[var(--color-heritage-red)]",
+    selectedBg: "bg-[var(--color-heritage-red-light)] border-[var(--color-heritage-red)]",
+    selectedText: "text-[var(--color-heritage-red)]",
+    desc: "Bold red — high-contrast accent",
+  },
+  green: {
+    label: "Heritage Green",
+    hex: "#166534",
+    bg: "bg-[var(--color-heritage-green)]",
+    ring: "ring-[var(--color-heritage-green)]",
+    selectedBg: "bg-[var(--color-heritage-green-light)] border-[var(--color-heritage-green)]",
+    selectedText: "text-[var(--color-heritage-green)]",
+    desc: "Earthy green — cultural prestige tone",
+  },
+};
+
+// ── Main Page ──────────────────────────────────────────────────
 export default function AdminSettings() {
   const { draftState, updateDraft, saveDraft, publishState, currentUser } = useCms();
   const settings = draftState.settings;
 
-  // Local message state
-  const [saveStatus, setSaveStatus] = useState<"unsaved" | "saved" | "published">("unsaved");
-
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "published">("idle");
   const isReadOnly = currentUser.role === "contributor";
 
-  const handleChange = (key: string, value: string) => {
+  const set = (key: string, value: string) => {
     if (isReadOnly) return;
-    updateDraft((prev) => ({
-      ...prev,
-      settings: {
-        ...prev.settings,
-        [key]: value,
-      },
-    }));
-    setSaveStatus("unsaved");
+    updateDraft((p) => ({ ...p, settings: { ...p.settings, [key]: value } }));
+    setSaveStatus("idle");
   };
 
   const handleSave = () => {
     if (isReadOnly) return;
     saveDraft();
     setSaveStatus("saved");
-    alert("Draft settings saved locally!");
   };
 
   const handlePublish = () => {
     if (isReadOnly) return;
     publishState();
     setSaveStatus("published");
-    alert("Branding and configuration settings published live!");
   };
 
   return (
-    <div className="space-y-8 max-w-4xl">
-      {/* Page Header */}
-      <div className="flex justify-between items-center bg-white border border-[#E8DDD0] rounded-2xl p-6 shadow-sm">
-        <div>
-          <h1 className="font-display text-2xl font-black text-[#1C1208]">Global Site Settings</h1>
-          <p className="text-xs text-[#7A6A57] mt-0.5">
-            Configure site metadata, branding elements, and core organizational contact parameters.
-          </p>
+    <div className="space-y-6 max-w-3xl">
+
+      {/* Header */}
+      <div className="bg-white border border-[#E8DDD0] rounded-2xl p-6 shadow-sm">
+        <p className="text-[9px] font-black uppercase tracking-widest text-[var(--color-heritage-gold)] mb-1">System</p>
+        <h1 className="font-display text-2xl font-black text-[#1C1208] tracking-tight">Global Site Settings</h1>
+        <p className="text-xs text-[#7A6A57] mt-1">Configure site metadata, branding, and core contact parameters.</p>
+      </div>
+
+      {isReadOnly && (
+        <div className="flex items-center gap-2.5 p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700 font-semibold">
+          <AlertTriangle size={14} className="shrink-0" /> View-Only: your role cannot change settings.
+        </div>
+      )}
+
+      {/* Site Identity */}
+      <SettingsSection title="Site Identity" desc="Metadata used in browser tabs, search results, and social sharing" icon={Globe}>
+        <Field label="Site Title" hint="Shown in the browser tab and as the SEO page title">
+          <input disabled={isReadOnly} type="text" className="form-input text-xs"
+            value={settings.siteTitle} onChange={(e) => set("siteTitle", e.target.value)} />
+        </Field>
+        <Field label="Meta Description" hint="Used by search engines — aim for 120–160 characters">
+          <div className="relative">
+            <textarea disabled={isReadOnly} rows={3} className="form-input text-xs resize-none"
+              value={settings.siteDescription} onChange={(e) => set("siteDescription", e.target.value)} />
+            <span className={`absolute bottom-2 right-3 text-[9px] font-semibold tabular-nums pointer-events-none ${
+              settings.siteDescription.length > 160 ? "text-red-500" : "text-[#A8957E]"
+            }`}>
+              {settings.siteDescription.length}/160
+            </span>
+          </div>
+        </Field>
+      </SettingsSection>
+
+      {/* Contact Information */}
+      <SettingsSection title="Contact Information" desc="Displayed in the site footer and on the Connect page" icon={Phone}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Contact Email">
+            <div className="relative">
+              <Mail size={13} className="absolute inset-y-0 left-3 my-auto text-[#A8957E] pointer-events-none" />
+              <input disabled={isReadOnly} type="email" className="form-input text-xs pl-9"
+                value={settings.contactEmail} onChange={(e) => set("contactEmail", e.target.value)} />
+            </div>
+          </Field>
+          <Field label="Contact Phone">
+            <div className="relative">
+              <Phone size={13} className="absolute inset-y-0 left-3 my-auto text-[#A8957E] pointer-events-none" />
+              <input disabled={isReadOnly} type="text" className="form-input text-xs pl-9"
+                value={settings.contactPhone} onChange={(e) => set("contactPhone", e.target.value)} />
+            </div>
+          </Field>
+        </div>
+      </SettingsSection>
+
+      {/* Colour Theme */}
+      <SettingsSection title="Brand Colour Theme" desc="Sets the primary accent colour for headings, buttons, and card highlights" icon={Palette}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {(["gold", "red", "green"] as const).map((c) => {
+            const meta = accentMeta[c];
+            const active = settings.primaryColorAccent === c;
+            return (
+              <button key={c} disabled={isReadOnly} type="button"
+                onClick={() => set("primaryColorAccent", c)}
+                className={`relative flex items-start gap-3 p-4 rounded-xl border-2 text-left transition-all cursor-pointer disabled:cursor-not-allowed ${
+                  active ? `${meta.selectedBg} shadow-sm` : "border-[#E8DDD0] bg-white hover:bg-[#FAF7F2]"
+                }`}>
+                {/* Swatch */}
+                <div className={`w-8 h-8 rounded-lg ${meta.bg} shadow-md shrink-0 mt-0.5`} />
+                <div className="min-w-0">
+                  <p className={`font-bold text-xs ${active ? meta.selectedText : "text-[#1C1208]"}`}>{meta.label}</p>
+                  <p className="text-[10px] text-[#7A6A57] font-light mt-0.5">{meta.desc}</p>
+                </div>
+                {active && (
+                  <div className={`absolute top-2 right-2 w-4 h-4 rounded-full ${meta.bg} flex items-center justify-center`}>
+                    <CheckCircle2 size={10} className="text-white" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-start gap-2 p-3 bg-[#FAF7F2] rounded-xl border border-[#E8DDD0] text-[10px] text-[#7A6A57]">
+          <Info size={12} className="shrink-0 mt-0.5 text-[#A8957E]" />
+          <span>Colour changes apply to buttons, section headings, and card accents across the public site after publishing.</span>
+        </div>
+      </SettingsSection>
+
+      {/* Save / Publish */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 py-2">
+        {/* Status */}
+        <div className="flex items-center gap-2 text-xs text-[#7A6A57] font-semibold">
+          <div className={`w-2 h-2 rounded-full ${
+            saveStatus === "published" ? "bg-emerald-500" :
+            saveStatus === "saved"     ? "bg-[var(--color-heritage-gold)]" :
+                                         "bg-[#C8B99A] animate-pulse"
+          }`} />
+          {saveStatus === "published" ? "Settings published live"     :
+           saveStatus === "saved"     ? "Draft saved — not yet live"  :
+                                        "Unsaved changes"}
+        </div>
+
+        <div className="flex gap-2.5 shrink-0">
+          <button disabled={isReadOnly} onClick={handleSave}
+            className="flex items-center gap-1.5 px-4 py-2.5 border border-[#E8DDD0] hover:border-[#1C1208] text-xs font-bold text-[#3D3020] rounded-xl transition-all cursor-pointer disabled:opacity-40">
+            <Save size={13} /> Save Draft
+          </button>
+          <button disabled={isReadOnly} onClick={handlePublish}
+            className="flex items-center gap-1.5 px-5 py-2.5 bg-[var(--color-heritage-gold)] hover:bg-[var(--color-heritage-gold-dark)] text-xs font-bold text-white rounded-xl shadow-lg shadow-[var(--color-heritage-gold)]/20 transition-all cursor-pointer disabled:opacity-40">
+            {saveStatus === "published" ? <CheckCircle2 size={13} /> : <Globe size={13} />}
+            Publish Settings
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Settings Form */}
-        <div className="md:col-span-2 bg-white border border-[#E8DDD0] rounded-2xl p-6 shadow-sm space-y-6">
-          <div>
-            <h3 className="font-display font-black text-base text-[#1C1208] mb-1">General Configurations</h3>
-            <p className="text-[11px] text-[#7A6A57]">Standard meta tags and agency parameters.</p>
-          </div>
-
-          <div className="space-y-4 text-xs">
-            <div>
-              <label className="form-label font-bold text-[#1C1208] mb-1.5 block">Site Title (Metadata)</label>
-              <input
-                disabled={isReadOnly}
-                type="text"
-                className="form-input text-xs"
-                value={settings.siteTitle}
-                onChange={(e) => handleChange("siteTitle", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="form-label font-bold text-[#1C1208] mb-1.5 block">Meta Description</label>
-              <textarea
-                disabled={isReadOnly}
-                rows={3}
-                className="form-input text-xs resize-none"
-                value={settings.siteDescription}
-                onChange={(e) => handleChange("siteDescription", e.target.value)}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="form-label font-bold text-[#1C1208] mb-1.5 block">Contact Email</label>
-                <input
-                  disabled={isReadOnly}
-                  type="email"
-                  className="form-input text-xs"
-                  value={settings.contactEmail}
-                  onChange={(e) => handleChange("contactEmail", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="form-label font-bold text-[#1C1208] mb-1.5 block">Contact Phone Number</label>
-                <input
-                  disabled={isReadOnly}
-                  type="text"
-                  className="form-input text-xs"
-                  value={settings.contactPhone}
-                  onChange={(e) => handleChange("contactPhone", e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Branding & Theme Sidebar */}
-        <div className="bg-white border border-[#E8DDD0] rounded-2xl p-6 shadow-sm space-y-6">
-          <div>
-            <h3 className="font-display font-black text-base text-[#1C1208] mb-1">Color Theme Accents</h3>
-            <p className="text-[11px] text-[#7A6A57]">Select the active brand color theme for headings and cards.</p>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex gap-4">
-              {/* Option 1: Gold */}
-              <button
-                disabled={isReadOnly}
-                onClick={() => handleChange("primaryColorAccent", "gold")}
-                className={`flex-1 p-3 rounded-xl border flex flex-col items-center gap-2 cursor-pointer transition-all ${
-                  settings.primaryColorAccent === "gold"
-                    ? "border-[var(--color-heritage-gold)] bg-[var(--color-heritage-gold-light)]/20 shadow-sm"
-                    : "border-[#E8DDD0] hover:bg-[#FAF7F2]"
-                }`}
-              >
-                <span className="w-6 h-6 rounded-full bg-[var(--color-heritage-gold)] border border-yellow-600 shadow-sm" />
-                <span className="text-[10px] font-bold text-[#1C1208]">Heritage Gold</span>
-              </button>
-
-              {/* Option 2: Red */}
-              <button
-                disabled={isReadOnly}
-                onClick={() => handleChange("primaryColorAccent", "red")}
-                className={`flex-1 p-3 rounded-xl border flex flex-col items-center gap-2 cursor-pointer transition-all ${
-                  settings.primaryColorAccent === "red"
-                    ? "border-[var(--color-heritage-red)] bg-[var(--color-heritage-red-light)]/20 shadow-sm"
-                    : "border-[#E8DDD0] hover:bg-[#FAF7F2]"
-                }`}
-              >
-                <span className="w-6 h-6 rounded-full bg-[var(--color-heritage-red)] border border-red-800 shadow-sm" />
-                <span className="text-[10px] font-bold text-[#1C1208]">Heritage Red</span>
-              </button>
-            </div>
-
-            <div className="flex gap-4">
-              {/* Option 3: Green */}
-              <button
-                disabled={isReadOnly}
-                onClick={() => handleChange("primaryColorAccent", "green")}
-                className={`w-1/2 p-3 rounded-xl border flex flex-col items-center gap-2 cursor-pointer transition-all ${
-                  settings.primaryColorAccent === "green"
-                    ? "border-[var(--color-heritage-green)] bg-[var(--color-heritage-green-light)]/20 shadow-sm"
-                    : "border-[#E8DDD0] hover:bg-[#FAF7F2]"
-                }`}
-              >
-                <span className="w-6 h-6 rounded-full bg-[var(--color-heritage-green)] border border-green-800 shadow-sm" />
-                <span className="text-[10px] font-bold text-[#1C1208]">Heritage Green</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Action Footer */}
-      <div className="flex justify-end gap-3.5 border-t border-[#E8DDD0] pt-6 mt-4">
-        <span className="text-xs text-[#7A6A57] font-semibold flex items-center gap-2 mr-auto">
-          Status: {saveStatus.replace("-", " ")}
-        </span>
-        <button
-          disabled={isReadOnly}
-          onClick={handleSave}
-          className="flex items-center gap-1.5 px-4 py-2 border border-[#E8DDD0] hover:border-[#1C1208] text-xs font-bold text-[#1C1208] rounded-xl transition-all cursor-pointer disabled:opacity-50"
-        >
-          <Save size={13} /> Save Draft
-        </button>
-        <button
-          disabled={isReadOnly}
-          onClick={handlePublish}
-          className="flex items-center gap-1.5 px-4 py-2 bg-[var(--color-heritage-gold)] hover:bg-[var(--color-heritage-gold-dark)] text-xs font-bold text-white rounded-xl shadow-lg shadow-[var(--color-heritage-gold)]/20 transition-all cursor-pointer disabled:opacity-50"
-        >
-          Publish Settings
-        </button>
-      </div>
     </div>
   );
 }

@@ -1,8 +1,33 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { services as defaultServices, events as defaultEvents } from "@/lib/data";
-import { Service, Event } from "@/lib/types";
+import { services as defaultServices, events as defaultEvents, heritageCategories as defaultHeritageCategories } from "@/lib/data";
+import { Service, Event, HeritageCategory, HeritageItem } from "@/lib/types";
+import {
+  updateBookingStatusAction,
+  deleteBookingAction,
+  updateCmsStateAction,
+  upsertEventAction,
+  deleteEventAction,
+  upsertServiceAction,
+  deleteServiceAction,
+  upsertBlogPostAction,
+  deleteBlogPostAction,
+  upsertHeritagePillarAction,
+  upsertHeritageItemAction,
+  deleteHeritageItemAction,
+  getCmsData,
+} from "@/app/admin/actions/cms";
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  content: string;
+  mediaType: "image" | "youtube" | "tiktok" | "cloudinary_video";
+  mediaUrl?: string;
+  isPublished: boolean;
+  createdAt: string;
+}
 
 export interface Booking {
   id: string;
@@ -56,6 +81,8 @@ export interface CmsState {
   bookings: Booking[];
   users: UserAccount[];
   settings: CmsSettings;
+  blogPosts: BlogPost[];
+  heritageCategories: HeritageCategory[];
 }
 
 interface CmsContextType {
@@ -68,6 +95,17 @@ interface CmsContextType {
   addBooking: (booking: Omit<Booking, "id" | "status" | "createdAt">) => void;
   updateBookingStatus: (id: string, status: Booking["status"]) => void;
   deleteBooking: (id: string) => void;
+  addEvent: (event: Omit<Event, "id">) => void;
+  deleteEvent: (id: string) => void;
+  addService: (service: Omit<Service, "id" | "icon">) => void;
+  deleteService: (id: string) => void;
+  addBlogPost: (post: Omit<BlogPost, "id" | "createdAt">) => void;
+  deleteBlogPost: (id: string) => void;
+  updateBlogPost: (post: BlogPost) => void;
+  updateHeritagePillar: (pillar: HeritageCategory) => Promise<void>;
+  addHeritageItem: (item: Omit<HeritageItem, "id"> & { pillarId: string }) => Promise<void>;
+  updateHeritageItem: (item: HeritageItem & { pillarId: string }) => Promise<void>;
+  deleteHeritageItem: (id: string, pillarId: string) => Promise<void>;
   currentUser: UserAccount;
   setCurrentUserRole: (role: UserAccount["role"]) => void;
 }
@@ -89,7 +127,7 @@ const defaultSettings: CmsSettings = {
   siteTitle: "Volta Heritage Dance Ensemble",
   siteDescription: "Preserving and sharing Ewe cultural traditions through authentic dance, drumming, storytelling, and education.",
   contactEmail: "info@voltaheritage.art",
-  contactPhone: "+233 XX XXX XXXX",
+  contactPhone: "+233 24 952 7440",
   primaryColorAccent: "gold",
 };
 
@@ -97,51 +135,6 @@ const defaultUsers: UserAccount[] = [
   { id: "usr-1", name: "Eugene Kingdom", email: "eugene@voltaheritage.art", role: "admin", status: "active" },
   { id: "usr-2", name: "Kofi Mensah", email: "kofi.m@voltaheritage.art", role: "editor", status: "active" },
   { id: "usr-3", name: "Afua Adzo", email: "afua@voltaheritage.art", role: "contributor", status: "active" },
-];
-
-const defaultBookings: Booking[] = [
-  {
-    id: "bk-1",
-    name: "Akosua Dake",
-    email: "akosua.d@ghanafest.org",
-    phone: "+233 24 412 3456",
-    enquiryType: "performance",
-    eventDate: "2026-11-20",
-    venueLocation: "Accra International Conference Centre",
-    audienceSize: "500-1000",
-    subject: "GhanaFest Opening Ceremony Performance",
-    message: "We would love to book the full ensemble for the grand opening ceremony on November 20th. We require a 30-minute high-energy Agbadza and Borborbor showcase.",
-    status: "pending",
-    createdAt: "2026-06-02T10:15:00Z",
-  },
-  {
-    id: "bk-2",
-    name: "Prof. John Larson",
-    email: "j.larson@nyu.edu",
-    phone: "+1 212 555 0192",
-    enquiryType: "workshop",
-    eventDate: "2026-08-25",
-    venueLocation: "University of Ghana, Legon",
-    audienceSize: "under-100",
-    subject: "Study Abroad Cultural Immersion Workshop",
-    message: "Requesting a drumming and dance workshop for 25 visiting students from NYU. We want a focus on Atsimevu notation and Husago migration movements.",
-    status: "confirmed",
-    createdAt: "2026-06-01T14:32:00Z",
-  },
-  {
-    id: "bk-3",
-    name: "Mawuli Gbeda",
-    email: "mawuli@voltaholidays.com",
-    phone: "+233 20 889 7766",
-    enquiryType: "tourism",
-    eventDate: "2026-07-12",
-    venueLocation: "Agotime Kpetoe Kente Village",
-    groupSize: "12",
-    subject: "Private Tour Group Experience",
-    message: "Booking a private cultural package for a group of French tourists. We want a Kente double-weave demonstration followed by a private drum circle performance.",
-    status: "completed",
-    createdAt: "2026-05-28T09:12:00Z",
-  },
 ];
 
 const initialCmsState: CmsState = {
@@ -158,68 +151,99 @@ const initialCmsState: CmsState = {
   heroContent: defaultHeroContent,
   services: defaultServices,
   events: defaultEvents,
-  bookings: defaultBookings,
+  bookings: [],
   users: defaultUsers,
   settings: defaultSettings,
+  blogPosts: [],
+  heritageCategories: defaultHeritageCategories,
 };
 
 const CmsContext = createContext<CmsContextType | undefined>(undefined);
 
-export function CmsProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<CmsState>(initialCmsState);
-  const [draftState, setDraftState] = useState<CmsState>(initialCmsState);
+export function CmsProvider({ children, initialData }: { children: ReactNode, initialData?: Partial<CmsState> }) {
+  // Merge initial state
+  const mergedInitialState = {
+    ...initialCmsState,
+    ...initialData,
+    settings: initialData?.settings || initialCmsState.settings,
+    heroContent: initialData?.heroContent || initialCmsState.heroContent,
+    sectionsOrder: initialData?.sectionsOrder || initialCmsState.sectionsOrder,
+    sectionVisibility: initialData?.sectionVisibility || initialCmsState.sectionVisibility,
+  };
+
+  const [state, setState] = useState<CmsState>(mergedInitialState);
+  const [draftState, setDraftState] = useState<CmsState>(mergedInitialState);
   const [isLoaded, setIsLoaded] = useState(false);
   const [userRole, setUserRole] = useState<UserAccount["role"]>("admin");
 
-  // Load from LocalStorage on mount
   useEffect(() => {
+    // Only restoring Role from localStorage for demo purposes
     try {
-      const storedPublished = localStorage.getItem("vhde_cms_published");
-      const storedDraft = localStorage.getItem("vhde_cms_draft");
       const storedRole = localStorage.getItem("vhde_cms_role");
-
-      if (storedPublished) {
-        setState(JSON.parse(storedPublished));
-      }
-      if (storedDraft) {
-        setDraftState(JSON.parse(storedDraft));
-      } else if (storedPublished) {
-        setDraftState(JSON.parse(storedPublished));
-      }
-
-      if (storedRole) {
-        setUserRole(storedRole as UserAccount["role"]);
-      }
+      if (storedRole) setUserRole(storedRole as UserAccount["role"]);
     } catch (e) {
-      console.error("Failed to load CMS data from local storage", e);
+      console.error(e);
     }
+
+    // Client-side fetch if not seeded by layout (e.g. on public pages)
+    if (!initialData) {
+      getCmsData()
+        .then((data) => {
+          setState((prev) => ({
+            ...prev,
+            ...data,
+            settings: data.settings || prev.settings,
+            heroContent: data.heroContent || prev.heroContent,
+            sectionsOrder: data.sectionsOrder || prev.sectionsOrder,
+            sectionVisibility: data.sectionVisibility || prev.sectionVisibility,
+          }));
+          setDraftState((prev) => ({
+            ...prev,
+            ...data,
+            settings: data.settings || prev.settings,
+            heroContent: data.heroContent || prev.heroContent,
+            sectionsOrder: data.sectionsOrder || prev.sectionsOrder,
+            sectionVisibility: data.sectionVisibility || prev.sectionVisibility,
+          }));
+        })
+        .catch((err) => console.error("Failed to fetch public CMS data:", err));
+    }
+
     setIsLoaded(true);
-  }, []);
+  }, [initialData]);
 
   const updateDraft = (updater: (prev: CmsState) => CmsState) => {
-    setDraftState((prev) => {
-      const next = updater(prev);
-      localStorage.setItem("vhde_cms_draft", JSON.stringify(next));
-      return next;
-    });
+    setDraftState(updater);
   };
 
   const saveDraft = () => {
-    localStorage.setItem("vhde_cms_draft", JSON.stringify(draftState));
+    // Drafts are currently only in memory, but could be saved to local storage if desired
   };
 
-  const publishState = () => {
+  const publishState = async () => {
+    // Optimistic update
     setState(draftState);
-    localStorage.setItem("vhde_cms_published", JSON.stringify(draftState));
+    
+    try {
+      await updateCmsStateAction({
+        settings: draftState.settings,
+        heroContent: draftState.heroContent,
+        sectionsOrder: draftState.sectionsOrder,
+        sectionVisibility: draftState.sectionVisibility,
+      });
+    } catch (error) {
+      console.error("Failed to publish to Supabase", error);
+      alert("Failed to save changes to database.");
+    }
   };
 
   const resetAll = () => {
-    localStorage.removeItem("vhde_cms_published");
-    localStorage.removeItem("vhde_cms_draft");
-    setState(initialCmsState);
-    setDraftState(initialCmsState);
+    setState(mergedInitialState);
+    setDraftState(mergedInitialState);
   };
 
+  // Add booking uses an API route or direct server action if we were calling it from frontend
+  // For the CMS context, it's mostly used to simulate adding one, but realistically it's done via a public form
   const addBooking = (newBookingData: Omit<Booking, "id" | "status" | "createdAt">) => {
     const freshBooking: Booking = {
       ...newBookingData,
@@ -227,58 +251,308 @@ export function CmsProvider({ children }: { children: ReactNode }) {
       status: "pending",
       createdAt: new Date().toISOString(),
     };
-
-    // Auto-update published state for bookings so they submit immediately!
-    setState((prev) => {
-      const updatedBookings = [freshBooking, ...prev.bookings];
-      const next = { ...prev, bookings: updatedBookings };
-      localStorage.setItem("vhde_cms_published", JSON.stringify(next));
-      return next;
-    });
-
-    setDraftState((prev) => {
-      const updatedBookings = [freshBooking, ...prev.bookings];
-      const next = { ...prev, bookings: updatedBookings };
-      localStorage.setItem("vhde_cms_draft", JSON.stringify(next));
-      return next;
-    });
+    setState((prev) => ({ ...prev, bookings: [freshBooking, ...prev.bookings] }));
+    setDraftState((prev) => ({ ...prev, bookings: [freshBooking, ...prev.bookings] }));
   };
 
-  const updateBookingStatus = (id: string, status: Booking["status"]) => {
+  const updateBookingStatus = async (id: string, status: Booking["status"]) => {
+    // Optimistic
     const updater = (prev: CmsState): CmsState => ({
       ...prev,
       bookings: prev.bookings.map((b) => (b.id === id ? { ...b, status } : b)),
     });
+    setState(updater);
+    setDraftState(updater);
 
-    // Sync bookings status immediately on actions
-    setState((prev) => {
-      const next = updater(prev);
-      localStorage.setItem("vhde_cms_published", JSON.stringify(next));
-      return next;
-    });
-    setDraftState((prev) => {
-      const next = updater(prev);
-      localStorage.setItem("vhde_cms_draft", JSON.stringify(next));
-      return next;
-    });
+    try {
+      await updateBookingStatusAction(id, status);
+    } catch (error) {
+      console.error("Failed to update booking status", error);
+      // Revert could be implemented here
+    }
   };
 
-  const deleteBooking = (id: string) => {
+  const deleteBooking = async (id: string) => {
+    // Optimistic
     const updater = (prev: CmsState): CmsState => ({
       ...prev,
       bookings: prev.bookings.filter((b) => b.id !== id),
     });
+    setState(updater);
+    setDraftState(updater);
 
-    setState((prev) => {
-      const next = updater(prev);
-      localStorage.setItem("vhde_cms_published", JSON.stringify(next));
-      return next;
+    try {
+      await deleteBookingAction(id);
+    } catch (error) {
+      console.error("Failed to delete booking", error);
+    }
+  };
+
+  const addEvent = async (newEventData: Omit<Event, "id">) => {
+    const tempId = `new-evt-${Date.now()}`;
+    const freshEvent: Event = { ...newEventData, id: tempId };
+    
+    // Optimistic
+    const updater = (prev: CmsState): CmsState => ({
+      ...prev,
+      events: [freshEvent, ...prev.events],
     });
-    setDraftState((prev) => {
-      const next = updater(prev);
-      localStorage.setItem("vhde_cms_draft", JSON.stringify(next));
-      return next;
+    setState(updater);
+    setDraftState(updater);
+
+    try {
+      const dbEvent = await upsertEventAction(freshEvent);
+      // Replace temp id with real id
+      const swapUpdater = (prev: CmsState): CmsState => ({
+        ...prev,
+        events: prev.events.map((e) => e.id === tempId ? dbEvent : e),
+      });
+      setState(swapUpdater);
+      setDraftState(swapUpdater);
+    } catch (error) {
+      console.error("Failed to add event", error);
+    }
+  };
+
+  const deleteEvent = async (id: string) => {
+    const updater = (prev: CmsState): CmsState => ({
+      ...prev,
+      events: prev.events.filter((e) => e.id !== id),
     });
+    setState(updater);
+    setDraftState(updater);
+
+    try {
+      await deleteEventAction(id);
+    } catch (error) {
+      console.error("Failed to delete event", error);
+    }
+  };
+
+  const addService = async (newServiceData: Omit<Service, "id" | "icon">) => {
+    const tempId = `new-svc-${Date.now()}`;
+    const freshService: Service = { ...newServiceData, id: tempId, icon: "Music" };
+
+    const updater = (prev: CmsState): CmsState => ({
+      ...prev,
+      services: [...prev.services, freshService],
+    });
+    setState(updater);
+    setDraftState(updater);
+
+    try {
+      const dbService = await upsertServiceAction(freshService);
+      const swapUpdater = (prev: CmsState): CmsState => ({
+        ...prev,
+        services: prev.services.map((s) => s.id === tempId ? dbService : s),
+      });
+      setState(swapUpdater);
+      setDraftState(swapUpdater);
+    } catch (error) {
+      console.error("Failed to add service", error);
+    }
+  };
+
+  const deleteService = async (id: string) => {
+    const updater = (prev: CmsState): CmsState => ({
+      ...prev,
+      services: prev.services.filter((s) => s.id !== id),
+    });
+    setState(updater);
+    setDraftState(updater);
+
+    try {
+      await deleteServiceAction(id);
+    } catch (error) {
+      console.error("Failed to delete service", error);
+    }
+  };
+
+  const addBlogPost = async (newPostData: Omit<BlogPost, "id" | "createdAt">) => {
+    const tempId = `new-post-${Date.now()}`;
+    const freshPost: BlogPost = {
+      ...newPostData,
+      id: tempId,
+      createdAt: new Date().toISOString()
+    };
+
+    const updater = (prev: CmsState): CmsState => ({
+      ...prev,
+      blogPosts: [freshPost, ...prev.blogPosts],
+    });
+    setState(updater);
+    setDraftState(updater);
+
+    try {
+      const dbPost = await upsertBlogPostAction(freshPost);
+      const swapUpdater = (prev: CmsState): CmsState => ({
+        ...prev,
+        blogPosts: prev.blogPosts.map((p) => p.id === tempId ? dbPost : p),
+      });
+      setState(swapUpdater);
+      setDraftState(swapUpdater);
+    } catch (error) {
+      console.error("Failed to add blog post", error);
+    }
+  };
+
+  const deleteBlogPost = async (id: string) => {
+    const updater = (prev: CmsState): CmsState => ({
+      ...prev,
+      blogPosts: prev.blogPosts.filter((p) => p.id !== id),
+    });
+    setState(updater);
+    setDraftState(updater);
+
+    try {
+      await deleteBlogPostAction(id);
+    } catch (error) {
+      console.error("Failed to delete blog post", error);
+    }
+  };
+
+  const updateBlogPost = async (post: BlogPost) => {
+    const updater = (prev: CmsState): CmsState => ({
+      ...prev,
+      blogPosts: prev.blogPosts.map((p) => p.id === post.id ? post : p),
+    });
+    setState(updater);
+    setDraftState(updater);
+
+    try {
+      await upsertBlogPostAction(post);
+    } catch (error) {
+      console.error("Failed to update blog post", error);
+    }
+  };
+
+  const updateHeritagePillar = async (pillar: HeritageCategory) => {
+    const updater = (prev: CmsState): CmsState => ({
+      ...prev,
+      heritageCategories: prev.heritageCategories.map((c) => c.id === pillar.id ? pillar : c),
+    });
+    setState(updater);
+    setDraftState(updater);
+
+    try {
+      await upsertHeritagePillarAction({
+        id: pillar.id,
+        slug: pillar.slug,
+        name: pillar.name,
+        tagline: pillar.tagline,
+        description: pillar.description,
+        imageUrl: pillar.imageUrl,
+        color: pillar.color,
+      });
+    } catch (error) {
+      console.error("Failed to update heritage pillar", error);
+    }
+  };
+
+  const addHeritageItem = async (newItemData: Omit<HeritageItem, "id"> & { pillarId: string }) => {
+    const tempId = `new-item-${Date.now()}`;
+    const freshItem: HeritageItem = {
+      id: tempId,
+      name: newItemData.name,
+      description: newItemData.description,
+      significance: newItemData.significance,
+      imageUrl: newItemData.imageUrl,
+    };
+
+    const updater = (prev: CmsState): CmsState => ({
+      ...prev,
+      heritageCategories: prev.heritageCategories.map((c) => {
+        if (c.id === newItemData.pillarId) {
+          return { ...c, items: [...c.items, freshItem] };
+        }
+        return c;
+      }),
+    });
+    setState(updater);
+    setDraftState(updater);
+
+    try {
+      const dbItem = await upsertHeritageItemAction({
+        id: tempId,
+        pillarId: newItemData.pillarId,
+        name: newItemData.name,
+        description: newItemData.description,
+        significance: newItemData.significance,
+        imageUrl: newItemData.imageUrl,
+      });
+      const swapUpdater = (prev: CmsState): CmsState => ({
+        ...prev,
+        heritageCategories: prev.heritageCategories.map((c) => {
+          if (c.id === newItemData.pillarId) {
+            return {
+              ...c,
+              items: c.items.map((it) => it.id === tempId ? {
+                id: dbItem.id,
+                name: dbItem.name,
+                description: dbItem.description,
+                significance: dbItem.significance,
+                imageUrl: dbItem.image_url
+              } : it)
+            };
+          }
+          return c;
+        }),
+      });
+      setState(swapUpdater);
+      setDraftState(swapUpdater);
+    } catch (error) {
+      console.error("Failed to add heritage item", error);
+    }
+  };
+
+  const updateHeritageItem = async (item: HeritageItem & { pillarId: string }) => {
+    const updater = (prev: CmsState): CmsState => ({
+      ...prev,
+      heritageCategories: prev.heritageCategories.map((c) => {
+        if (c.id === item.pillarId) {
+          return {
+            ...c,
+            items: c.items.map((it) => it.id === item.id ? item : it)
+          };
+        }
+        return c;
+      }),
+    });
+    setState(updater);
+    setDraftState(updater);
+
+    try {
+      await upsertHeritageItemAction({
+        id: item.id,
+        pillarId: item.pillarId,
+        name: item.name,
+        description: item.description,
+        significance: item.significance,
+        imageUrl: item.imageUrl,
+      });
+    } catch (error) {
+      console.error("Failed to update heritage item", error);
+    }
+  };
+
+  const deleteHeritageItem = async (id: string, pillarId: string) => {
+    const updater = (prev: CmsState): CmsState => ({
+      ...prev,
+      heritageCategories: prev.heritageCategories.map((c) => {
+        if (c.id === pillarId) {
+          return { ...c, items: c.items.filter((it) => it.id !== id) };
+        }
+        return c;
+      }),
+    });
+    setState(updater);
+    setDraftState(updater);
+
+    try {
+      await deleteHeritageItemAction(id);
+    } catch (error) {
+      console.error("Failed to delete heritage item", error);
+    }
   };
 
   const setCurrentUserRole = (role: UserAccount["role"]) => {
@@ -286,7 +560,8 @@ export function CmsProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("vhde_cms_role", role);
   };
 
-  const currentUser: UserAccount = {
+  // Build the current user based on users array if possible, else default
+  const defaultUser = state.users.find(u => u.role === userRole) || {
     id: "usr-1",
     name: "Eugene Kingdom",
     email: "eugene@voltaheritage.art",
@@ -294,10 +569,12 @@ export function CmsProvider({ children }: { children: ReactNode }) {
     status: "active",
   };
 
-  // Prevent hydration flicker by returning null or empty layouts until loaded
-  if (!isLoaded) {
-    return null;
-  }
+  const currentUser: UserAccount = {
+    ...defaultUser,
+    role: userRole,
+  };
+
+  if (!isLoaded) return null;
 
   return (
     <CmsContext.Provider
@@ -311,6 +588,17 @@ export function CmsProvider({ children }: { children: ReactNode }) {
         addBooking,
         updateBookingStatus,
         deleteBooking,
+        addEvent,
+        deleteEvent,
+        addService,
+        deleteService,
+        addBlogPost,
+        deleteBlogPost,
+        updateBlogPost,
+        updateHeritagePillar,
+        addHeritageItem,
+        updateHeritageItem,
+        deleteHeritageItem,
         currentUser,
         setCurrentUserRole,
       }}

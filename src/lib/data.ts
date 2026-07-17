@@ -201,7 +201,7 @@ export const heritageCategories: HeritageCategory[] = [
     tagline: "Every thread tells a story",
     description:
       "Ewe Kente, woven in the historic hub of Agotime Kpetoe, is unique among Ghanaian Kente traditions for its direct incorporation of figurative symbols — animals, household utensils, and historical markers — that weave entire ancestral proverbs into cloth.",
-    imageUrl: "/images/WhatsApp Image 2026-06-02 at 16.38.14.jpeg",
+    imageUrl: "/images/ewe_kente_loom.png",
     color: "gold",
     items: [
       {
@@ -209,14 +209,14 @@ export const heritageCategories: HeritageCategory[] = [
         name: "Agotime Double-Weave",
         description: "The signature technique of Agotime weavers, creating reversible cloths with entirely different patterns on each side.",
         significance: "Represents the duality of existence — what is seen and what is hidden. A cloth fit for chiefs and royal ceremonies.",
-        imageUrl: "/images/WhatsApp Image 2026-06-02 at 16.38.14 (1).jpeg",
+        imageUrl: "/images/ewe_double_weave.png",
       },
       {
         id: "hc-kente-2",
         name: "Proverb Cloths",
         description: "Kente strips that incorporate Ewe proverbs through symbolic figurative representations woven directly into the fabric.",
         significance: "Each cloth is an educational document. Communities could read the cloth's proverbs as a community text.",
-        imageUrl: "/images/WhatsApp Image 2026-06-02 at 16.38.13 (3).jpeg",
+        imageUrl: "/images/ewe_proverb_kente.png",
       },
     ],
   },
@@ -272,7 +272,7 @@ export const heritageCategories: HeritageCategory[] = [
     tagline: "Culture tastes like home",
     description:
       "Volta Region cuisine reflects the geography and culture of the people — freshwater fish from the Volta Lake, yam from the fertile hills, and fermented foods that connect the Ewe to their agricultural heritage.",
-    imageUrl: "/images/WhatsApp Image 2026-06-02 at 10.54.35.jpeg",
+    imageUrl: "/images/traditional_ewe_food_cover.png",
     color: "green",
     items: [
       {
@@ -280,14 +280,14 @@ export const heritageCategories: HeritageCategory[] = [
         name: "Akple & Fetri Detsi",
         description: "The iconic Ewe staple — a smooth corn dough (akple) served with a rich okra-based stew and smoked fish.",
         significance: "A meal of community. Akple is traditionally eaten communally from a shared bowl as an act of unity.",
-        imageUrl: "/images/WhatsApp Image 2026-06-02 at 10.54.35 (1).jpeg",
+        imageUrl: "/images/akple_and_fetri_detsi.png",
       },
       {
         id: "hc-food-2",
         name: "Volta Lake Fish (Tilapia)",
         description: "Freshwater tilapia from the Volta Lake, grilled over open fire and served with pepper sauce.",
         significance: "Represents the Ewe's intimate relationship with the Volta River system — their ancestral lifeblood.",
-        imageUrl: "/images/WhatsApp Image 2026-06-02 at 10.54.35 (2).jpeg",
+        imageUrl: "/images/grilled_volta_tilapia.png",
       },
     ],
   },

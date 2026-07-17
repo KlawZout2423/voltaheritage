@@ -3,6 +3,7 @@ import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import FloatingBlogButton from "@/components/FloatingBlogButton";
 import { CmsProvider } from "@/context/CmsContext";
 
 /* ─── Fonts ──────────────────────────────────────────────────
@@ -125,6 +126,7 @@ export default function RootLayout({
           </main>
 
           <Footer />
+          <FloatingBlogButton />
         </CmsProvider>
       </body>
     </html>
