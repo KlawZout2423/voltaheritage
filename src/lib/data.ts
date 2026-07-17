@@ -449,4 +449,11 @@ export const team: TeamMember[] = [
     bio: "A graduate of Ho Technical University (HTU) currently on National Service, Bless joined the ensemble in 2023 and assumed office as Drum Major in 2024. With experience in both traditional and modern drumming styles, he leads drumming activities, mentors developing drummers, and is committed to preserving the rich rhythmic heritage of the Volta Region.",
     imageUrl: "/images/team-bless-kove.png",
   },
+  {
+    id: "tm-5",
+    name: "Ivy Selase Kodzi",
+    title: "Public Relations Officer & Treasurer",
+    bio: "A dedicated Nursing student at the University of Health and Allied Sciences (UHAS) with a passion for leadership, culture, healthcare, and community service. Ivy currently serves as the Public Relations Officer (PRO) and Treasurer of The Volta Heritage Dance Ensemble, where she contributes to promoting cultural preservation, effective communication, and the growth of the group. Through her roles and academic journey, she has developed strong skills in leadership, teamwork, public relations, financial management, and service to others. She is passionate about combining her nursing knowledge and leadership abilities to make a positive impact in her community, believing in continuous learning, compassion, excellence, and the importance of preserving heritage for future generations.",
+    imageUrl: "/images/team-ivy-selase-kodzi.png",
+  },
 ];
