@@ -27,13 +27,6 @@ interface GalleryContentProps {
 
 const categories = ["all", "performance", "festival", "heritage", "workshop"];
 
-const categoryColors: Record<string, string> = {
-  performance: "badge-gold",
-  festival: "badge-red",
-  heritage: "badge-red",
-  workshop: "badge-green",
-};
-
 export default function GalleryContent({ photos, videos }: GalleryContentProps) {
   const [activeCategory, setActiveCategory] = useState("all");
   const [activePhotoIndex, setActivePhotoIndex] = useState<number | null>(null);
@@ -247,10 +240,13 @@ export default function GalleryContent({ photos, videos }: GalleryContentProps) 
                 transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                 className="relative w-full h-full max-w-[90%] max-h-[70vh] flex items-center justify-center"
               >
-                <img
+                <Image
                   src={filteredPhotos[activePhotoIndex].src}
                   alt={filteredPhotos[activePhotoIndex].caption}
+                  width={1200}
+                  height={800}
                   className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                  priority
                 />
               </motion.div>
 

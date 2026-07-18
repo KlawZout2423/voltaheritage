@@ -4,7 +4,7 @@ import { useState, useEffect, Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Calendar, MapPin, ArrowRight, Play, Users, Music, Star, Globe, ChevronDown, Video } from "lucide-react";
+import { Calendar, MapPin, ArrowRight, Play, Star, ChevronDown, Video } from "lucide-react";
 import { articles, heritageCategories, institution } from "@/lib/data";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import { useCms } from "@/context/CmsContext";
@@ -74,7 +74,6 @@ export default function HomePage() {
   const { state } = useCms();
   const { heroContent, sectionsOrder, sectionVisibility, events: cmsEvents, services: cmsServices } = state;
 
-  const featuredEvents = cmsEvents.filter((e) => e.isFeatured).slice(0, 2);
   const upcomingEvents = cmsEvents.slice(0, 3);
   const dbPosts = (state.blogPosts || []).filter((p) => p.isPublished).slice(0, 3);
   const latestArticles = dbPosts.length > 0

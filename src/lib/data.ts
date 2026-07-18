@@ -176,21 +176,21 @@ export const heritageCategories: HeritageCategory[] = [
         name: "Atsimevu (Master Drum)",
         description: "The lead drum, standing nearly two metres tall. The unquestionable voice of authority in any Ewe ensemble.",
         significance: "Commands the entire ensemble. Only experienced master drummers are permitted to play it.",
-        imageUrl: "/images/WhatsApp Image 2026-06-02 at 10.54.40 (1).jpeg",
+        imageUrl: "/images/atsimevu.png",
       },
       {
         id: "hc-music-2",
         name: "Sogo (Response Drum)",
         description: "The response drum that maintains constant dialogue with the Atsimevu.",
         significance: "Provides tonal counterpoint, creating the musical conversation that defines Ewe drumming.",
-        imageUrl: "/images/WhatsApp Image 2026-06-02 at 10.54.40 (2).jpeg",
+        imageUrl: "/images/sogo.png",
       },
       {
         id: "hc-music-3",
         name: "Gankogui (Iron Bell)",
         description: "A double-ended iron bell that provides the rhythmic foundation for all Ewe ensemble music.",
         significance: "The temporal anchor of the ensemble. Its pattern never changes, giving dancers a fixed reference point.",
-        imageUrl: "/images/WhatsApp Image 2026-06-02 at 10.54.42.jpeg",
+        imageUrl: "/images/gankogui.png",
       },
     ],
   },
@@ -253,7 +253,7 @@ export const heritageCategories: HeritageCategory[] = [
     tagline: "Governance rooted in tradition",
     description:
       "The Ewe chieftaincy system is a sophisticated governance structure built on ancestral authority, communal consensus, and spiritual legitimacy. Chiefs are not merely political leaders but custodians of cultural memory.",
-    imageUrl: "/images/WhatsApp Image 2026-06-02 at 16.38.10.jpeg",
+    imageUrl: "/images/chieftaincy-cover.png",
     color: "green",
     items: [
       {
@@ -455,5 +455,19 @@ export const team: TeamMember[] = [
     title: "Public Relations Officer & Treasurer",
     bio: "A dedicated Nursing student at the University of Health and Allied Sciences (UHAS) with a passion for leadership, culture, healthcare, and community service. Ivy currently serves as the Public Relations Officer (PRO) and Treasurer of The Volta Heritage Dance Ensemble, where she contributes to promoting cultural preservation, effective communication, and the growth of the group. Through her roles and academic journey, she has developed strong skills in leadership, teamwork, public relations, financial management, and service to others. She is passionate about combining her nursing knowledge and leadership abilities to make a positive impact in her community, believing in continuous learning, compassion, excellence, and the importance of preserving heritage for future generations.",
     imageUrl: "/images/team-ivy-selase-kodzi.png",
+  },
+  {
+    id: "tm-6",
+    name: "Bannor Stephanie Amerley",
+    title: "Senior Props & Costume Manageress",
+    bio: "Senior Props and Costume Manageress since 2021 and a student at the Ghana Armed Forces College of Nursing and Midwifery (GAFCONM). Since joining the ensemble in 2019, she has demonstrated dedication and discipline in preserving Ghanaian cultural heritage. In her role, she coordinates and manages costumes and performance props to ensure historical authenticity. Amerley also contributes as a dancer and singer, dedicating herself to mentoring younger members and promoting cultural identity.",
+    imageUrl: "/images/team-stephanie-bannor.jpg",
+  },
+  {
+    id: "tm-7",
+    name: "Emmanuella Amedzro Yayra",
+    title: "Acting Assistant of Costume & Props",
+    bio: "Acting Assistant of Costume and Props since 2025. Joining the ensemble in 2021, Emmanuella has been highly active in rehearsals, performances, and cultural programs. Driven by a childhood passion for music and traditional dance, she contributes her teamwork and versatility to VHDE. In her executive role, she supports the coordination of costumes and performance props, serving as an inspiration to younger members and advocating for cultural unity.",
+    imageUrl: "/images/team-emmanuella-amedzro.jpg",
   },
 ];

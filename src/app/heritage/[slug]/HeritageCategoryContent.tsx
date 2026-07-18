@@ -113,9 +113,6 @@ export default function HeritageCategoryContent({ slug }: { slug: string }) {
                       <div className="w-full h-full bg-neutral-100" />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className={`absolute top-4 left-4 w-9 h-9 rounded-xl ${styles.dot} flex items-center justify-center font-black text-sm shadow-sm`}>
-                      {i + 1}
-                    </div>
                   </div>
 
                   {/* Text column */}

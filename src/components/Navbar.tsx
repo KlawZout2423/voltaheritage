@@ -6,7 +6,6 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
-import { institution } from "@/lib/data";
 
 const navLinks = [
   { label: "Home", href: "/", tagline: "Home" },
@@ -82,7 +81,10 @@ export default function Navbar() {
 
   // Close mobile nav on route change
   useEffect(() => {
-    setOpen(false);
+    const timer = setTimeout(() => {
+      setOpen(false);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [pathname]);
 
   if (isAdmin) return null;

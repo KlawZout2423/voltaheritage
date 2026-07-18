@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, MapPin, Star, ArrowRight, List, GitCommit } from "lucide-react";
+import { Calendar, MapPin, Star, List, GitCommit } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import { useCms } from "@/context/CmsContext";
 
@@ -200,7 +199,7 @@ export default function EventsContent({ events: initialEvents }: EventsContentPr
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 className="relative border-l-2 border-[var(--color-heritage-gold)]/40 ml-4 md:ml-32 pl-6 md:pl-8 space-y-12 py-4"
               >
-                {sortedEvents.map((event, i) => (
+                {sortedEvents.map((event) => (
                   <div key={event.id} className="relative group">
                     {/* Timeline dot */}
                     <div className="absolute -left-[35px] md:-left-[43px] top-1.5 w-6 h-6 rounded-full bg-white border-4 border-[var(--color-heritage-gold)] flex items-center justify-center z-10 transition-transform group-hover:scale-110 shadow-sm">

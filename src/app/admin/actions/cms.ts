@@ -2,11 +2,87 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { Booking, UserAccount, CmsState, BlogPost } from "@/context/CmsContext";
-import { Event, Service, HeritageCategory, HeritageItem } from "@/lib/types";
+import { Event, Service, HeritageCategory } from "@/lib/types";
 import { v2 as cloudinary } from "cloudinary";
 
+interface DbBooking {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  enquiry_type: string;
+  event_date?: string | null;
+  venue_location?: string | null;
+  audience_size?: string | null;
+  participant_count?: string | null;
+  target_age?: string | null;
+  group_size?: string | null;
+  subject: string;
+  message: string;
+  status: Booking["status"];
+  created_at: string;
+}
+
+interface DbEvent {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  end_date?: string | null;
+  venue: string;
+  category: Event["category"];
+  image_url: string;
+  is_featured: boolean;
+}
+
+interface DbService {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  color: Service["color"];
+  features: string[] | null;
+}
+
+interface DbUser {
+  id: string;
+  name: string;
+  email: string;
+  role: UserAccount["role"];
+  status: UserAccount["status"];
+}
+
+interface DbBlogPost {
+  id: string;
+  title: string;
+  content: string;
+  media_type: BlogPost["mediaType"];
+  media_url?: string | null;
+  is_published: boolean;
+  created_at: string;
+}
+
+interface DbPillar {
+  id: string;
+  slug: string;
+  name: string;
+  tagline: string;
+  description: string;
+  image_url: string;
+  color: string;
+}
+
+interface DbItem {
+  id: string;
+  pillar_id: string;
+  name: string;
+  description: string;
+  significance: string;
+  image_url: string;
+}
+
 // Helper to handle casing differences between DB and UI if needed
-function mapBookingFromDB(b: any): Booking {
+function mapBookingFromDB(b: DbBooking): Booking {
   return {
     id: b.id,
     name: b.name,
@@ -26,7 +102,7 @@ function mapBookingFromDB(b: any): Booking {
   };
 }
 
-function mapEventFromDB(e: any): Event {
+function mapEventFromDB(e: DbEvent): Event {
   return {
     id: e.id,
     title: e.title,
@@ -40,7 +116,7 @@ function mapEventFromDB(e: any): Event {
   };
 }
 
-function mapServiceFromDB(s: any): Service {
+function mapServiceFromDB(s: DbService): Service {
   return {
     id: s.id,
     title: s.title,
@@ -51,7 +127,7 @@ function mapServiceFromDB(s: any): Service {
   };
 }
 
-function mapUserFromDB(u: any): UserAccount {
+function mapUserFromDB(u: DbUser): UserAccount {
   return {
     id: u.id,
     name: u.name,
@@ -61,7 +137,7 @@ function mapUserFromDB(u: any): UserAccount {
   };
 }
 
-function mapBlogPostFromDB(b: any): BlogPost {
+function mapBlogPostFromDB(b: DbBlogPost): BlogPost {
   return {
     id: b.id,
     title: b.title,
@@ -101,10 +177,10 @@ export async function getCmsData() {
     supabase.from("heritage_items").select("*").order("created_at", { ascending: true })
   ]);
 
-  const mappedPillars: HeritageCategory[] = (pillars || []).map((p: any) => {
-    const pillarItems = (items || [])
-      .filter((it: any) => it.pillar_id === p.id)
-      .map((it: any) => ({
+  const mappedPillars: HeritageCategory[] = ((pillars || []) as DbPillar[]).map((p: DbPillar) => {
+    const pillarItems = ((items || []) as DbItem[])
+      .filter((it: DbItem) => it.pillar_id === p.id)
+      .map((it: DbItem) => ({
         id: it.id,
         name: it.name,
         description: it.description,
@@ -124,11 +200,11 @@ export async function getCmsData() {
   });
 
   return {
-    bookings: (bookings || []).map(mapBookingFromDB),
-    events: (events || []).map(mapEventFromDB),
-    services: (services || []).map(mapServiceFromDB),
-    users: (users || []).map(mapUserFromDB),
-    blogPosts: (blogPosts || []).map(mapBlogPostFromDB),
+    bookings: ((bookings || []) as DbBooking[]).map(mapBookingFromDB),
+    events: ((events || []) as DbEvent[]).map(mapEventFromDB),
+    services: ((services || []) as DbService[]).map(mapServiceFromDB),
+    users: ((users || []) as DbUser[]).map(mapUserFromDB),
+    blogPosts: ((blogPosts || []) as DbBlogPost[]).map(mapBlogPostFromDB),
     heritageCategories: mappedPillars,
     settings: settingsData ? {
       siteTitle: settingsData.site_title,
@@ -175,7 +251,7 @@ export async function updateCmsStateAction(newState: Partial<CmsState>) {
   const supabase = await createClient();
 
   // Extract what goes into cms_settings
-  const updatePayload: any = {};
+  const updatePayload: Record<string, unknown> = {};
   if (newState.settings) {
     updatePayload.site_title = newState.settings.siteTitle;
     updatePayload.site_description = newState.settings.siteDescription;
@@ -208,7 +284,7 @@ export async function updateCmsStateAction(newState: Partial<CmsState>) {
 
 export async function upsertEventAction(event: Partial<Event> & { id?: string }) {
   const supabase = await createClient();
-  const payload: any = {
+  const payload: Record<string, unknown> = {
     title: event.title,
     description: event.description,
     date: event.date,
@@ -230,7 +306,7 @@ export async function upsertEventAction(event: Partial<Event> & { id?: string })
     .single();
 
   if (error) throw new Error(error.message);
-  return mapEventFromDB(data);
+  return mapEventFromDB(data as DbEvent);
 }
 
 export async function deleteEventAction(id: string) {
@@ -246,7 +322,7 @@ export async function deleteEventAction(id: string) {
 
 export async function upsertServiceAction(service: Partial<Service> & { id?: string }) {
   const supabase = await createClient();
-  const payload: any = {
+  const payload: Record<string, unknown> = {
     title: service.title,
     description: service.description,
     icon: service.icon,
@@ -265,7 +341,7 @@ export async function upsertServiceAction(service: Partial<Service> & { id?: str
     .single();
 
   if (error) throw new Error(error.message);
-  return mapServiceFromDB(data);
+  return mapServiceFromDB(data as DbService);
 }
 
 export async function deleteServiceAction(id: string) {
@@ -281,7 +357,7 @@ export async function deleteServiceAction(id: string) {
 
 export async function upsertBlogPostAction(post: Partial<BlogPost> & { id?: string }) {
   const supabase = await createClient();
-  const payload: any = {
+  const payload: Record<string, unknown> = {
     title: post.title,
     content: post.content,
     media_type: post.mediaType,
@@ -300,7 +376,7 @@ export async function upsertBlogPostAction(post: Partial<BlogPost> & { id?: stri
     .single();
 
   if (error) throw new Error(error.message);
-  return mapBlogPostFromDB(data);
+  return mapBlogPostFromDB(data as DbBlogPost);
 }
 
 export async function deleteBlogPostAction(id: string) {
@@ -324,7 +400,7 @@ export async function uploadMediaAction(base64Data: string, fileType: string) {
 
   try {
     console.log(`[Upload] Attempting Supabase storage upload to bucket: ${bucketName}...`);
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from(bucketName)
       .upload(fileName, buffer, {
         contentType: fileType,
@@ -341,8 +417,9 @@ export async function uploadMediaAction(base64Data: string, fileType: string) {
 
     console.log(`[Upload] Supabase upload succeeded! Public URL: ${publicUrl}`);
     return publicUrl;
-  } catch (supabaseError: any) {
-    console.warn(`[Upload] Supabase upload failed (${supabaseError.message}). Falling back to Cloudinary...`);
+  } catch (supabaseError) {
+    const sError = supabaseError as Error;
+    console.warn(`[Upload] Supabase upload failed (${sError.message}). Falling back to Cloudinary...`);
     
     try {
       if (!process.env.CLOUDINARY_URL) {
@@ -356,9 +433,10 @@ export async function uploadMediaAction(base64Data: string, fileType: string) {
 
       console.log(`[Upload] Cloudinary upload succeeded! URL: ${uploadResult.secure_url}`);
       return uploadResult.secure_url;
-    } catch (cloudinaryError: any) {
-      console.error("[Upload] Cloudinary fallback failed:", cloudinaryError.message);
-      throw new Error(`Upload failed on both Supabase and Cloudinary. Supabase: ${supabaseError.message}. Cloudinary: ${cloudinaryError.message}`);
+    } catch (cloudinaryError) {
+      const cError = cloudinaryError as Error;
+      console.error("[Upload] Cloudinary fallback failed:", cError.message);
+      throw new Error(`Upload failed on both Supabase and Cloudinary. Supabase: ${sError.message}. Cloudinary: ${cError.message}`);
     }
   }
 }

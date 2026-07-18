@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import {
-  Plus, Trash2, Calendar, MapPin, Tag, X, Star, Music,
-  Edit2, ChevronDown, ChevronUp, AlertTriangle,
+  Plus, Trash2, Calendar, MapPin, X, Star, Music,
+  ChevronDown, ChevronUp, AlertTriangle,
 } from "lucide-react";
 import { useCms } from "@/context/CmsContext";
 import { Service, Event } from "@/lib/types";

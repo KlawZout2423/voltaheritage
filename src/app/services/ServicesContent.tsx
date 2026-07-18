@@ -116,7 +116,7 @@ export default function ServicesContent() {
                     {svc.features && svc.features.length > 0 && (
                       <div>
                         <p className="text-xs font-bold text-[var(--color-text-secondary)] uppercase tracking-wider mb-3">
-                          What's Included
+                          What&apos;s Included
                         </p>
                         <ul className="space-y-2">
                           {svc.features.map((f) => (

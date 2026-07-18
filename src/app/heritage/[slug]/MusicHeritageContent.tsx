@@ -1,11 +1,11 @@
 "use client";
-
+ 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Play, Pause, Volume2, Music, CheckCircle } from "lucide-react";
+import { Play, Pause, Volume2, Music } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
-
+ 
 interface DrumItem {
   id: string;
   name: string;
@@ -13,10 +13,9 @@ interface DrumItem {
   significance: string;
   imageUrl: string;
 }
-
+ 
 interface MusicHeritageContentProps {
   items: DrumItem[];
-  categoryName: string;
   styles: {
     badge: string;
     card: string;
@@ -25,8 +24,15 @@ interface MusicHeritageContentProps {
     dot: string;
   };
 }
-
-export default function MusicHeritageContent({ items, categoryName, styles }: MusicHeritageContentProps) {
+ 
+const RHYTHM_HEIGHTS = [
+  [12, 45, 12], [12, 60, 12], [12, 30, 12], [12, 75, 12], [12, 50, 12], [12, 85, 12],
+  [12, 40, 12], [12, 90, 12], [12, 25, 12], [12, 70, 12], [12, 35, 12], [12, 80, 12],
+  [12, 55, 12], [12, 65, 12], [12, 20, 12], [12, 95, 12], [12, 48, 12], [12, 72, 12],
+  [12, 38, 12], [12, 88, 12], [12, 28, 12], [12, 82, 12], [12, 42, 12], [12, 68, 12]
+];
+ 
+export default function MusicHeritageContent({ items, styles }: MusicHeritageContentProps) {
   const [activeDrum, setActiveDrum] = useState<string>(items[0]?.id || "");
   const [isPlayingRhythm, setIsPlayingRhythm] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -37,7 +43,7 @@ export default function MusicHeritageContent({ items, categoryName, styles }: Mu
   // Initialize Audio Context on first interaction
   const initAudio = () => {
     if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      audioContextRef.current = new (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
     }
     if (audioContextRef.current.state === "suspended") {
       audioContextRef.current.resume();
@@ -58,45 +64,38 @@ export default function MusicHeritageContent({ items, categoryName, styles }: Mu
     const now = ctx.currentTime;
 
     if (drumType.includes("Atsimevu") || drumType.includes("Master")) {
-      // Deep bass pitch glide
+      // low accent thud
       osc.type = "sine";
-      osc.frequency.setValueAtTime(130, now);
-      osc.frequency.exponentialRampToValueAtTime(55, now + 0.35);
-      
-      gainNode.gain.setValueAtTime(0.8, now);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-      
+      osc.frequency.setValueAtTime(80, now);
+      osc.frequency.exponentialRampToValueAtTime(0.01, now + 0.3);
+      gainNode.gain.setValueAtTime(1.5, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
       osc.start(now);
-      osc.stop(now + 0.4);
+      osc.stop(now + 0.3);
     } else if (drumType.includes("Sogo") || drumType.includes("Response")) {
-      // Resonant mid drum
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(200, now);
-      osc.frequency.exponentialRampToValueAtTime(90, now + 0.2);
-      
-      gainNode.gain.setValueAtTime(0.7, now);
+      // mid range punch
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(140, now);
+      osc.frequency.exponentialRampToValueAtTime(30, now + 0.25);
+      gainNode.gain.setValueAtTime(0.8, now);
       gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-      
       osc.start(now);
       osc.stop(now + 0.25);
-    } else if (drumType.includes("Gankogui") || drumType.includes("Bell")) {
-      // High bell ping (double frequency for iron resonance)
-      osc.type = "triangle";
-      osc.frequency.setValueAtTime(750, now);
-      
-      gainNode.gain.setValueAtTime(0.4, now);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-      
+    } else {
+      // Gankogui bell: double tone metallic clank using two oscillators
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(880, now); // high tone
+      gainNode.gain.setValueAtTime(0.3, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
       osc.start(now);
-      osc.stop(now + 0.18);
-      
-      // Secondary oscillator for bell overtone
+      osc.stop(now + 0.15);
+
       const osc2 = ctx.createOscillator();
       const gain2 = ctx.createGain();
-      osc2.type = "sine";
-      osc2.frequency.setValueAtTime(500, now);
       osc2.connect(gain2);
       gain2.connect(ctx.destination);
+      osc2.type = "sine";
+      osc2.frequency.setValueAtTime(587, now); // low tone
       gain2.gain.setValueAtTime(0.3, now);
       gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
       osc2.start(now);
@@ -166,7 +165,7 @@ export default function MusicHeritageContent({ items, categoryName, styles }: Mu
                   className="w-1 bg-[var(--color-heritage-gold)] rounded-full"
                   animate={{
                     height: isPlayingRhythm 
-                      ? [12, Math.random() * 80 + 20, 12] 
+                      ? RHYTHM_HEIGHTS[i % RHYTHM_HEIGHTS.length] 
                       : 12
                   }}
                   transition={{

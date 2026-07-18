@@ -44,50 +44,99 @@ export default function HeritageContent() {
       <section className="py-20 bg-white">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {categories.map((cat, i) => (
-              <AnimateOnScroll 
-                key={cat.id} 
-                direction="up" 
-                delay={i * 0.1}
-                className="flex"
-              >
-                <Link
-                  href={`/heritage/${cat.slug}`}
-                  id={`heritage-${cat.slug}`}
-                  className="card group overflow-hidden flex flex-col bg-white w-full hover:border-[var(--color-heritage-gold)]"
+            {categories.map((cat, i) => {
+              const borderColors = {
+                red: "hover:border-[var(--color-heritage-red)]",
+                gold: "hover:border-[var(--color-heritage-gold)]",
+                green: "hover:border-[var(--color-heritage-green)]"
+              };
+              const kenteColors = {
+                red: "from-[var(--color-heritage-red)] to-red-500",
+                gold: "from-[var(--color-heritage-gold)] to-amber-500",
+                green: "from-[var(--color-heritage-green)] to-emerald-600"
+              };
+              const hoverTextColors = {
+                red: "group-hover:text-[var(--color-heritage-red)]",
+                gold: "group-hover:text-[var(--color-heritage-gold)]",
+                green: "group-hover:text-[var(--color-heritage-green)]"
+              };
+              const circleHoverBg = {
+                red: "group-hover:bg-[var(--color-heritage-red)]",
+                gold: "group-hover:bg-[var(--color-heritage-gold)]",
+                green: "group-hover:bg-[var(--color-heritage-green)]"
+              };
+
+              const borderCol = borderColors[cat.color] || borderColors.gold;
+              const kenteCol = kenteColors[cat.color] || kenteColors.gold;
+              const textCol = hoverTextColors[cat.color] || hoverTextColors.gold;
+              const circleBg = circleHoverBg[cat.color] || circleHoverBg.gold;
+
+              return (
+                <AnimateOnScroll 
+                  key={cat.id} 
+                  direction="up" 
+                  delay={i * 0.1}
+                  className="flex"
                 >
-                  <div className="aspect-[4/3] relative overflow-hidden rounded-t-xl bg-neutral-100">
-                    {cat.imageUrl ? (
-                      <Image
-                        src={cat.imageUrl}
-                        alt={cat.name}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                        className="object-cover group-hover:scale-103 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-neutral-200" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/65 to-transparent" />
-                    <div className="absolute bottom-4 left-4">
-                      <span className={`badge badge-${cat.color} shadow-sm`}>{cat.items?.length || 0} traditions</span>
+                  <Link
+                    href={`/heritage/${cat.slug}`}
+                    id={`heritage-${cat.slug}`}
+                    className={`card group overflow-hidden flex flex-col bg-white w-full border border-[var(--color-border)] ${borderCol} hover:shadow-xl transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] rounded-2xl`}
+                  >
+                    {/* Image Area */}
+                    <div className="aspect-[16/10] w-full relative overflow-hidden bg-[var(--color-bg-secondary)]">
+                      {cat.imageUrl ? (
+                        <Image
+                          src={cat.imageUrl}
+                          alt={cat.name}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                          className="object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-neutral-250" />
+                      )}
+                      
+                      {/* Gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300" />
+                      
+                      {/* Top-Right traditions count badge */}
+                      <div className="absolute top-4 right-4 z-10">
+                        <span className={`badge badge-${cat.color} text-[9px] font-black px-3 py-1 shadow-md uppercase tracking-wider backdrop-blur-sm bg-white/95 text-[var(--color-text-primary)] border border-[#E8DDD0]`}>
+                          {cat.items?.length || 0} Traditions
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="p-6 flex flex-col flex-1">
-                    <h2 className="font-display text-2xl font-bold text-[var(--color-text-primary)] mb-1">
-                      {cat.name}
-                    </h2>
-                    <p className="text-xs italic text-[var(--color-heritage-gold)] font-bold mb-3">{cat.tagline}</p>
-                    <p className="text-sm text-[var(--color-text-muted)] leading-relaxed line-clamp-3 flex-1 font-light">
-                      {cat.description}
-                    </p>
-                    <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[var(--color-heritage-gold)] group-hover:gap-4 transition-all">
-                      Explore <ArrowRight size={14} />
-                    </span>
-                  </div>
-                </Link>
-              </AnimateOnScroll>
-            ))}
+
+                    {/* Colored Category Stripe */}
+                    <div className={`h-1.5 w-full bg-gradient-to-r ${kenteCol} shrink-0`} />
+
+                    {/* Content area */}
+                    <div className="p-6 flex flex-col flex-1 gap-1">
+                      <h2 className={`font-display text-2xl font-black text-[var(--color-text-primary)] transition-colors duration-300 ${textCol}`}>
+                        {cat.name}
+                      </h2>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-light)] mb-3">
+                        {cat.tagline}
+                      </p>
+                      <p className="text-xs text-[var(--color-text-muted)] leading-relaxed line-clamp-3 flex-1 font-light">
+                        {cat.description}
+                      </p>
+                      
+                      {/* Interactive Footer */}
+                      <div className="pt-4 mt-4 border-t border-[var(--color-bg-secondary)] flex items-center justify-between shrink-0 font-bold">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-secondary)]">
+                          Explore Pillar
+                        </span>
+                        <span className={`w-8 h-8 rounded-full bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] ${circleBg} group-hover:text-white flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1 shadow-sm`}>
+                          <ArrowRight size={14} />
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                </AnimateOnScroll>
+              );
+            })}
           </div>
         </div>
       </section>

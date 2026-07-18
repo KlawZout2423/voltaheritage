@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import {
-  Plus, Trash2, Video, Globe, X, Eye, EyeOff, Link as LinkIcon, Edit2, AlertTriangle, FileText, Loader2
+  Plus, Trash2, Video, X, Eye, EyeOff, Edit2, AlertTriangle, Loader2
 } from "lucide-react";
 import { useCms, BlogPost } from "@/context/CmsContext";
 import { uploadMediaAction } from "@/app/admin/actions/cms";
@@ -119,8 +119,9 @@ function PostModal({ post, onClose, onSave }: {
           mediaUrl: publicUrl,
           mediaType: file.type.startsWith("video/") ? "cloudinary_video" : "image",
         }));
-      } catch (err: any) {
-        setUploadError(err.message || "Failed to upload file");
+      } catch (err) {
+        const error = err as Error;
+        setUploadError(error.message || "Failed to upload file");
       } finally {
         setUploading(false);
       }

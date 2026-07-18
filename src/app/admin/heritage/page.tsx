@@ -154,8 +154,9 @@ export default function AdminHeritagePage() {
         } else {
           setItemForm((prev) => ({ ...prev, imageUrl: publicUrl }));
         }
-      } catch (err: any) {
-        setUploadError(err.message || "Failed to upload image");
+      } catch (err) {
+        const error = err as Error;
+        setUploadError(error.message || "Failed to upload image");
       } finally {
         setUploading(false);
       }
@@ -166,11 +167,12 @@ export default function AdminHeritagePage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white border border-[#E8DDD0] rounded-2xl p-6 shadow-sm">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Living Archive Manager</h1>
-          <p className="text-sm text-neutral-400">
-            Edit the cultural pillars, tags, descriptions, and media items representing the Ewe heritage.
+          <p className="text-[9px] font-black uppercase tracking-widest text-[var(--color-heritage-gold)] mb-1">Pillars</p>
+          <h1 className="font-display text-2xl font-black text-[#1C1208] tracking-tight">Living Archive Manager</h1>
+          <p className="text-xs text-[#7A6A57] mt-1">
+            Edit the cultural pillars, taglines, descriptions, and media items representing Ewe heritage.
           </p>
         </div>
       </div>
@@ -182,9 +184,9 @@ export default function AdminHeritagePage() {
             <div
               key={pillar.id}
               onClick={() => handlePillarClick(pillar)}
-              className="group cursor-pointer overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900/50 p-5 transition-all hover:border-[var(--color-heritage-gold)] hover:bg-neutral-900"
+              className="group cursor-pointer overflow-hidden rounded-2xl border border-[#E8DDD0] bg-white p-5 transition-all hover:border-[var(--color-heritage-gold)] hover:shadow-md duration-300 flex flex-col h-full"
             >
-              <div className="relative mb-4 h-40 w-full overflow-hidden rounded-lg bg-neutral-800">
+              <div className="relative mb-4 h-40 w-full overflow-hidden rounded-xl bg-[#FAF7F2] border border-[#E8DDD0]">
                 {pillar.imageUrl ? (
                   <Image
                     src={pillar.imageUrl}
@@ -194,18 +196,18 @@ export default function AdminHeritagePage() {
                     className="object-cover transition-transform duration-300 group-hover:scale-103"
                   />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-neutral-600">
+                  <div className="flex h-full items-center justify-center text-[#C8B99A]">
                     <ImageIcon size={32} />
                   </div>
                 )}
-                <div className="absolute top-2 right-2 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-black/60 text-white border border-neutral-700">
+                <div className="absolute top-2 right-2 rounded-full px-2.5 py-1 text-[8px] font-black uppercase tracking-wider bg-white/90 backdrop-blur-sm text-[#1C1208] border border-[#E8DDD0] shadow-sm">
                   {pillar.color}
                 </div>
               </div>
-              <h3 className="font-semibold text-white group-hover:text-[var(--color-heritage-gold)] transition-colors">
+              <h3 className="font-display font-black text-[#1C1208] group-hover:text-[var(--color-heritage-gold)] transition-colors text-sm">
                 {pillar.name}
               </h3>
-              <p className="mt-1 text-xs text-neutral-400 line-clamp-2">{pillar.tagline}</p>
+              <p className="mt-1 text-xs text-[#7A6A57] line-clamp-2 font-light leading-relaxed">{pillar.tagline}</p>
             </div>
           ))}
         </div>
@@ -214,7 +216,7 @@ export default function AdminHeritagePage() {
         <div className="space-y-6">
           <button
             onClick={() => setSelectedPillar(null)}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-400 hover:text-white transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#7A6A57] hover:text-[#1C1208] transition-colors cursor-pointer"
           >
             <ArrowLeft size={14} /> Back to Pillars
           </button>
@@ -222,13 +224,13 @@ export default function AdminHeritagePage() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Pillar Meta Section */}
             <div className="lg:col-span-1 space-y-6">
-              <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-5">
-                <div className="flex items-center justify-between border-b border-neutral-800 pb-3 mb-4">
-                  <h3 className="font-bold text-white text-sm">Pillar Details</h3>
+              <div className="rounded-2xl border border-[#E8DDD0] bg-white p-6 shadow-sm">
+                <div className="flex items-center justify-between border-b border-[#E8DDD0] pb-3 mb-4">
+                  <h3 className="font-display font-black text-[#1C1208] text-sm">Pillar Details</h3>
                   {!editingPillar && (
                     <button
                       onClick={handleEditPillar}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-neutral-800 hover:bg-neutral-750 text-xs font-semibold text-white transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E8DDD0] hover:bg-[#FAF7F2] text-xs font-bold text-[#1C1208] transition-colors cursor-pointer"
                     >
                       <Edit2 size={11} /> Edit
                     </button>
@@ -238,7 +240,7 @@ export default function AdminHeritagePage() {
                 {editingPillar && pillarForm ? (
                   <form onSubmit={handleSavePillar} className="space-y-4">
                     <div>
-                      <label className="block text-[10px] font-bold uppercase text-neutral-400 mb-1">
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-1.5">
                         Pillar Name
                       </label>
                       <input
@@ -246,12 +248,12 @@ export default function AdminHeritagePage() {
                         required
                         value={pillarForm.name}
                         onChange={(e) => setPillarForm({ ...pillarForm, name: e.target.value })}
-                        className="w-full rounded bg-neutral-800 border border-neutral-700 px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[var(--color-heritage-gold)]"
+                        className="form-input text-xs w-full"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold uppercase text-neutral-400 mb-1">
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-1.5">
                         Tagline
                       </label>
                       <input
@@ -259,12 +261,12 @@ export default function AdminHeritagePage() {
                         required
                         value={pillarForm.tagline}
                         onChange={(e) => setPillarForm({ ...pillarForm, tagline: e.target.value })}
-                        className="w-full rounded bg-neutral-800 border border-neutral-700 px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[var(--color-heritage-gold)]"
+                        className="form-input text-xs w-full"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold uppercase text-neutral-400 mb-1">
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-1.5">
                         Description
                       </label>
                       <textarea
@@ -272,12 +274,12 @@ export default function AdminHeritagePage() {
                         rows={4}
                         value={pillarForm.description}
                         onChange={(e) => setPillarForm({ ...pillarForm, description: e.target.value })}
-                        className="w-full rounded bg-neutral-800 border border-neutral-700 px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[var(--color-heritage-gold)]"
+                        className="form-input text-xs w-full resize-none"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold uppercase text-neutral-400 mb-1">
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-1.5">
                         Accent Color
                       </label>
                       <select
@@ -285,7 +287,7 @@ export default function AdminHeritagePage() {
                         onChange={(e) =>
                           setPillarForm({ ...pillarForm, color: e.target.value as "gold" | "red" | "green" })
                         }
-                        className="w-full rounded bg-neutral-800 border border-neutral-700 px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[var(--color-heritage-gold)]"
+                        className="form-input text-xs w-full"
                       >
                         <option value="gold">Gold</option>
                         <option value="red">Red</option>
@@ -294,12 +296,12 @@ export default function AdminHeritagePage() {
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold uppercase text-neutral-400 mb-1">
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-1.5">
                         Cover Image
                       </label>
                       <div className="space-y-2">
                         {pillarForm.imageUrl && (
-                          <div className="relative h-28 w-full rounded border border-neutral-800 overflow-hidden">
+                          <div className="relative h-28 w-full rounded-xl border border-[#E8DDD0] overflow-hidden bg-[#FAF7F2]">
                             <Image
                               src={pillarForm.imageUrl}
                               alt="Pillar preview"
@@ -312,7 +314,7 @@ export default function AdminHeritagePage() {
                           type="file"
                           accept="image/*"
                           onChange={(e) => handleFileUpload(e, true)}
-                          className="w-full text-xs text-neutral-400 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-neutral-850 file:text-white hover:file:bg-neutral-750"
+                          className="w-full text-xs text-[#7A6A57] file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border file:border-[#E8DDD0] file:text-[10px] file:font-black file:bg-[#FAF7F2] file:text-[#1C1208] hover:file:bg-[#F2EBE0] cursor-pointer file:transition-colors"
                         />
                       </div>
                     </div>
@@ -323,14 +325,14 @@ export default function AdminHeritagePage() {
                       <button
                         type="submit"
                         disabled={savingPillar || uploading}
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 py-1.5 rounded bg-[var(--color-heritage-gold)] hover:bg-[var(--color-heritage-gold-dark)] disabled:opacity-50 text-black text-xs font-bold transition-all"
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-4 rounded-xl bg-[var(--color-heritage-gold)] hover:bg-[var(--color-heritage-gold-dark)] disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-[var(--color-heritage-gold)]/20 cursor-pointer"
                       >
                         {savingPillar ? <Loader2 className="animate-spin" size={12} /> : <Save size={12} />} Save
                       </button>
                       <button
                         type="button"
                         onClick={handleCancelPillarEdit}
-                        className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold transition-all"
+                        className="px-4 py-2 rounded-xl border border-[#E8DDD0] hover:bg-[#FAF7F2] text-[#1C1208] text-xs font-bold transition-all cursor-pointer"
                       >
                         Cancel
                       </button>
@@ -338,7 +340,7 @@ export default function AdminHeritagePage() {
                   </form>
                 ) : (
                   <div className="space-y-4 text-xs">
-                    <div className="relative h-32 w-full overflow-hidden rounded-lg">
+                    <div className="relative h-32 w-full overflow-hidden rounded-xl border border-[#E8DDD0] bg-[#FAF7F2]">
                       {currentPillar.imageUrl ? (
                         <Image
                           src={currentPillar.imageUrl}
@@ -347,28 +349,28 @@ export default function AdminHeritagePage() {
                           className="object-cover"
                         />
                       ) : (
-                        <div className="flex h-full items-center justify-center bg-neutral-800 text-neutral-600">
+                        <div className="flex h-full items-center justify-center text-[#C8B99A]">
                           <ImageIcon size={24} />
                         </div>
                       )}
                     </div>
                     <div>
-                      <h4 className="text-[10px] font-bold uppercase text-neutral-500">Pillar Name</h4>
-                      <p className="font-semibold text-white mt-0.5">{currentPillar.name}</p>
+                      <h4 className="text-[9px] font-black uppercase tracking-widest text-[#A8957E]">Pillar Name</h4>
+                      <p className="font-display font-black text-[#1C1208] mt-0.5 text-sm">{currentPillar.name}</p>
                     </div>
                     <div>
-                      <h4 className="text-[10px] font-bold uppercase text-neutral-500">Tagline</h4>
-                      <p className="text-neutral-300 mt-0.5 font-light">{currentPillar.tagline}</p>
+                      <h4 className="text-[9px] font-black uppercase tracking-widest text-[#A8957E]">Tagline</h4>
+                      <p className="text-xs italic text-[var(--color-heritage-gold)] font-bold mt-0.5">{currentPillar.tagline}</p>
                     </div>
                     <div>
-                      <h4 className="text-[10px] font-bold uppercase text-neutral-500">Description</h4>
-                      <p className="text-neutral-400 mt-1 leading-relaxed whitespace-pre-line font-light">
+                      <h4 className="text-[9px] font-black uppercase tracking-widest text-[#A8957E]">Description</h4>
+                      <p className="text-xs text-[#7A6A57] mt-1 leading-relaxed whitespace-pre-line font-light">
                         {currentPillar.description}
                       </p>
                     </div>
                     <div>
-                      <h4 className="text-[10px] font-bold uppercase text-neutral-500">Accent Color</h4>
-                      <span className="mt-1 inline-block rounded-full bg-neutral-800 border border-neutral-700 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+                      <h4 className="text-[9px] font-black uppercase tracking-widest text-[#A8957E]">Accent Color</h4>
+                      <span className="mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-[#FAF7F2] border border-[#E8DDD0] text-[#1C1208]">
                         {currentPillar.color}
                       </span>
                     </div>
@@ -379,12 +381,12 @@ export default function AdminHeritagePage() {
 
             {/* Sub-items Editor Section */}
             <div className="lg:col-span-2 space-y-4">
-              <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
-                <h3 className="font-bold text-white text-sm">Cultural Sub-Items ({currentPillar.items.length})</h3>
+              <div className="flex items-center justify-between border-b border-[#E8DDD0] pb-3">
+                <h3 className="font-display font-black text-[#1C1208] text-sm">Cultural Sub-Items ({currentPillar.items.length})</h3>
                 {!editingItem && !isNewItem && (
                   <button
                     onClick={handleAddNewItem}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-[var(--color-heritage-gold)] hover:bg-[var(--color-heritage-gold-dark)] text-black text-xs font-bold transition-all"
+                    className="btn-primary flex items-center gap-1.5 text-xs py-2 px-4 rounded-xl cursor-pointer"
                   >
                     <Plus size={13} /> Add Sub-Item
                   </button>
@@ -393,14 +395,14 @@ export default function AdminHeritagePage() {
 
               {/* Form to create/edit item */}
               {(editingItem || isNewItem) && (
-                <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5 space-y-4">
-                  <div className="flex items-center justify-between border-b border-neutral-800 pb-2 mb-2">
-                    <h4 className="font-bold text-white text-xs">
+                <div className="rounded-2xl border border-[#E8DDD0] bg-white p-6 space-y-4 shadow-sm">
+                  <div className="flex items-center justify-between border-b border-[#E8DDD0] pb-2 mb-2">
+                    <h4 className="font-display font-black text-[#1C1208] text-xs">
                       {isNewItem ? "Add New Sub-Item" : `Edit Sub-Item: ${editingItem?.name}`}
                     </h4>
                     <button
                       onClick={handleCancelItemEdit}
-                      className="text-neutral-400 hover:text-white"
+                      className="text-[#7A6A57] hover:text-[#1C1208] transition-colors cursor-pointer"
                     >
                       <X size={15} />
                     </button>
@@ -409,7 +411,7 @@ export default function AdminHeritagePage() {
                   <form onSubmit={handleSaveItem} className="space-y-4 text-xs">
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="block text-[10px] font-bold uppercase text-neutral-400 mb-1">
+                        <label className="block text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-1.5">
                           Item Name
                         </label>
                         <input
@@ -417,24 +419,24 @@ export default function AdminHeritagePage() {
                           required
                           value={itemForm.name}
                           onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })}
-                          className="w-full rounded bg-neutral-800 border border-neutral-700 px-3 py-1.5 text-white focus:outline-none focus:border-[var(--color-heritage-gold)]"
+                          className="form-input text-xs w-full"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold uppercase text-neutral-400 mb-1">
+                        <label className="block text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-1.5">
                           Media Image
                         </label>
                         <input
                           type="file"
                           accept="image/*"
                           onChange={(e) => handleFileUpload(e, false)}
-                          className="w-full file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-neutral-850 file:text-white hover:file:bg-neutral-750"
+                          className="w-full text-xs text-[#7A6A57] file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border file:border-[#E8DDD0] file:text-[10px] file:font-black file:bg-[#FAF7F2] file:text-[#1C1208] hover:file:bg-[#F2EBE0] cursor-pointer file:transition-colors"
                         />
                       </div>
                     </div>
 
                     {itemForm.imageUrl && (
-                      <div className="relative h-36 w-full max-w-sm rounded border border-neutral-800 overflow-hidden bg-neutral-800">
+                      <div className="relative h-36 w-full max-w-sm rounded-xl border border-[#E8DDD0] overflow-hidden bg-[#FAF7F2]">
                         <Image
                           src={itemForm.imageUrl}
                           alt="Sub item preview"
@@ -445,7 +447,7 @@ export default function AdminHeritagePage() {
                     )}
 
                     <div>
-                      <label className="block text-[10px] font-bold uppercase text-neutral-400 mb-1">
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-1.5">
                         Detailed Description
                       </label>
                       <textarea
@@ -453,12 +455,12 @@ export default function AdminHeritagePage() {
                         rows={3}
                         value={itemForm.description}
                         onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })}
-                        className="w-full rounded bg-neutral-800 border border-neutral-700 px-3 py-1.5 text-white focus:outline-none focus:border-[var(--color-heritage-gold)]"
+                        className="form-input text-xs w-full resize-none"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold uppercase text-neutral-400 mb-1">
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-[#7A6A57] mb-1.5">
                         Cultural Significance
                       </label>
                       <textarea
@@ -466,7 +468,7 @@ export default function AdminHeritagePage() {
                         rows={2}
                         value={itemForm.significance}
                         onChange={(e) => setItemForm({ ...itemForm, significance: e.target.value })}
-                        className="w-full rounded bg-neutral-800 border border-neutral-700 px-3 py-1.5 text-white focus:outline-none focus:border-[var(--color-heritage-gold)]"
+                        className="form-input text-xs w-full resize-none"
                       />
                     </div>
 
@@ -476,14 +478,14 @@ export default function AdminHeritagePage() {
                       <button
                         type="submit"
                         disabled={savingItem || uploading}
-                        className="inline-flex items-center gap-1.5 py-1.5 px-4 rounded bg-[var(--color-heritage-gold)] hover:bg-[var(--color-heritage-gold-dark)] disabled:opacity-50 text-black font-bold transition-all"
+                        className="inline-flex items-center gap-1.5 py-2 px-4 rounded-xl bg-[var(--color-heritage-gold)] hover:bg-[var(--color-heritage-gold-dark)] disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-[var(--color-heritage-gold)]/20 cursor-pointer"
                       >
                         {savingItem ? <Loader2 className="animate-spin" size={12} /> : <Save size={12} />} Save Sub-Item
                       </button>
                       <button
                         type="button"
                         onClick={handleCancelItemEdit}
-                        className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-white font-semibold transition-all"
+                        className="px-4 py-2 rounded-xl border border-[#E8DDD0] hover:bg-[#FAF7F2] text-[#1C1208] text-xs font-bold transition-all cursor-pointer"
                       >
                         Cancel
                       </button>
@@ -495,16 +497,16 @@ export default function AdminHeritagePage() {
               {/* Items List */}
               <div className="space-y-4">
                 {currentPillar.items.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-neutral-800 p-8 text-center text-neutral-500 text-xs">
-                    No sub-items added yet. Click "Add Sub-Item" to create one.
+                  <div className="bg-white border border-dashed border-[#E8DDD0] rounded-2xl p-12 flex flex-col items-center text-center gap-2 text-xs text-[#7A6A57] font-light">
+                    No sub-items added yet. Click &quot;Add Sub-Item&quot; to create one.
                   </div>
                 ) : (
                   currentPillar.items.map((item) => (
                     <div
                       key={item.id}
-                      className="group flex flex-col sm:flex-row gap-4 overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900/30 p-4 transition-all hover:border-neutral-700"
+                      className="group flex flex-col sm:flex-row gap-4 overflow-hidden rounded-2xl border border-[#E8DDD0] bg-white p-4 transition-all hover:border-[var(--color-heritage-gold)]/40 hover:shadow-sm"
                     >
-                      <div className="relative h-28 w-full sm:w-40 shrink-0 overflow-hidden rounded-lg bg-neutral-800">
+                      <div className="relative h-28 w-full sm:w-40 shrink-0 overflow-hidden rounded-xl bg-[#FAF7F2] border border-[#E8DDD0]">
                         {item.imageUrl ? (
                           <Image
                             src={item.imageUrl}
@@ -514,36 +516,36 @@ export default function AdminHeritagePage() {
                             className="object-cover"
                           />
                         ) : (
-                          <div className="flex h-full items-center justify-center text-neutral-600">
+                          <div className="flex h-full items-center justify-center text-[#C8B99A]">
                             <ImageIcon size={20} />
                           </div>
                         )}
                       </div>
 
                       <div className="flex-1 flex flex-col justify-between">
-                        <div className="space-y-1">
-                          <h4 className="font-bold text-white text-sm">{item.name}</h4>
-                          <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed font-light">
+                        <div className="space-y-1.5">
+                          <h4 className="font-display font-black text-[#1C1208] text-sm">{item.name}</h4>
+                          <p className="text-xs text-[#7A6A57] line-clamp-2 leading-relaxed font-light">
                             {item.description}
                           </p>
-                          <p className="text-[10px] text-neutral-400/80 leading-relaxed font-light italic">
-                            <span className="font-bold uppercase text-[9px] text-[var(--color-heritage-gold)] not-italic mr-1">
-                              Significance:
+                          <div className="text-[10px] text-[#A8957E] leading-relaxed font-light italic bg-[#FAF7F2] p-2.5 rounded-xl border border-[#E8DDD0] mt-1.5">
+                            <span className="font-black uppercase text-[8px] text-[var(--color-heritage-gold)] not-italic mr-1.5 block mb-0.5">
+                              Cultural Significance:
                             </span>
                             {item.significance}
-                          </p>
+                          </div>
                         </div>
 
-                        <div className="flex items-center gap-2 justify-end mt-2 pt-2 border-t border-neutral-850">
+                        <div className="flex items-center gap-2 justify-end mt-3 pt-3 border-t border-[#E8DDD0]">
                           <button
                             onClick={() => handleEditItem(item)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-neutral-850 hover:bg-neutral-800 text-[10px] font-semibold text-white transition-colors"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E8DDD0] hover:bg-[#FAF7F2] text-[10px] font-bold text-[#1C1208] transition-colors cursor-pointer"
                           >
                             <Edit2 size={10} /> Edit
                           </button>
                           <button
                             onClick={() => handleDeleteItem(item.id)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-red-950/40 hover:bg-red-900/60 border border-red-900/50 text-[10px] font-semibold text-red-400 transition-colors"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-[10px] font-bold text-red-600 transition-colors cursor-pointer"
                           >
                             <Trash2 size={10} /> Delete
                           </button>

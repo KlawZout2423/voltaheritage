@@ -19,7 +19,9 @@ export default function AdminLogin() {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.get("error") === "unauthorized") {
-        setError("Your account is not authorized to access the CMS portal. Please sign in with an administrator account.");
+        setTimeout(() => {
+          setError("Your account is not authorized to access the CMS portal. Please sign in with an administrator account.");
+        }, 0);
       }
     }
   }, []);

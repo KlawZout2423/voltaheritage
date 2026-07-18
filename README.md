@@ -44,7 +44,7 @@ Generic section headers have been rebranded into unique, culturally aligned term
 - `Upcoming Events` ➔ **In Orbit** (`/events`)
 - `Photo Gallery` ➔ **Visions** (`/gallery`)
 - `Our Services` ➔ **Offerings** (`/services`)
-- `Latest News` ➔ **Blue Spotlight** (`/news`)
+- `Latest News` ➔ **Blue Spotlight** (`/blog`)
 - `Contact Us` ➔ **Connect** (`/contact`)
 
 ---

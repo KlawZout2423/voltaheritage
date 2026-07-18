@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Save, Globe, Phone, Mail, FileText, Palette, CheckCircle2, AlertTriangle, Info } from "lucide-react";
+import { Save, Globe, Phone, Mail, Palette, CheckCircle2, AlertTriangle, Info } from "lucide-react";
 import { useCms } from "@/context/CmsContext";
 
 // ── Section wrapper ────────────────────────────────────────────

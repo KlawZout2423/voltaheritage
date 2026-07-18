@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import {
   TrendingUp,
@@ -13,7 +13,6 @@ import {
   ArrowRight,
   Inbox,
   Sparkles,
-  Music,
   MapPin,
   Activity,
   AlertCircle,

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Mail, Phone, Send, CheckCircle, ShieldCheck, Star } from "lucide-react";
+import { MapPin, Mail, Phone, Send, CheckCircle, ShieldCheck, Star, X, Printer } from "lucide-react";
 import { institution } from "@/lib/data";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import { useCms } from "@/context/CmsContext";
@@ -44,6 +44,8 @@ const testimonials = [
 export default function ContactPage() {
   const { addBooking } = useCms();
   const [submitted, setSubmitted] = useState(false);
+  const [agreed, setAgreed] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -65,6 +67,10 @@ export default function ContactPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (["performance", "workshop", "school", "tourism"].includes(form.enquiryType) && !agreed) {
+      alert("You must agree to the Performance Engagement Agreement & Terms to submit booking.");
+      return;
+    }
     addBooking({
       name: form.name,
       email: form.email,
@@ -276,6 +282,7 @@ export default function ContactPage() {
                       targetAge: "mixed",
                       groupSize: "",
                     }); 
+                    setAgreed(false);
                   }}
                   className="btn-outline btn-sm font-bold"
                 >
@@ -532,10 +539,37 @@ export default function ContactPage() {
                   />
                 </motion.div>
 
+                {/* Terms & Conditions Checkbox */}
+                {["performance", "workshop", "school", "tourism"].includes(form.enquiryType) && (
+                  <motion.div variants={inputVariants} className="flex items-start gap-3 p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)]">
+                    <input
+                      id="contact-agreed"
+                      name="agreed"
+                      type="checkbox"
+                      required
+                      checked={agreed}
+                      onChange={(e) => setAgreed(e.target.checked)}
+                      className="mt-1 w-4 h-4 text-[var(--color-heritage-gold)] border-[var(--color-border)] rounded focus:ring-[var(--color-heritage-gold)] animate-fade-in"
+                    />
+                    <label htmlFor="contact-agreed" className="text-xs text-[var(--color-text-secondary)] leading-relaxed select-none">
+                      I agree to the{" "}
+                      <button
+                        type="button"
+                        onClick={() => setShowTermsModal(true)}
+                        className="text-[var(--color-heritage-gold)] font-bold hover:underline cursor-pointer focus:outline-none"
+                      >
+                        Performance Engagement Agreement & Terms & Conditions
+                      </button>{" "}
+                      and liability waiver.
+                    </label>
+                  </motion.div>
+                )}
+
                 <motion.button 
                   id="contact-submit" 
                   type="submit" 
-                  className="btn-primary w-full justify-center"
+                  disabled={["performance", "workshop", "school", "tourism"].includes(form.enquiryType) && !agreed}
+                  className="btn-primary w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                   variants={inputVariants}
                 >
                   <Send size={16} />
@@ -576,6 +610,193 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
+      {/* ── Terms and Conditions Modal ── */}
+      <AnimatePresence>
+        {showTermsModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-white border border-[#E8DDD0] rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] text-[var(--color-text-primary)]"
+            >
+              {/* Header */}
+              <div className="relative p-6 border-b border-[#E8DDD0] bg-[#1C1208] text-white">
+                <div className="absolute top-0 left-0 right-0 h-1 kente-strip" />
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-[var(--color-heritage-gold)] mb-1 block">
+                      Ensemble Agreement
+                    </span>
+                    <h3 className="font-display font-black text-xl leading-tight text-white">
+                      Performance Engagement & Waiver
+                    </h3>
+                    <p className="text-[10px] text-white/50 mt-1 font-medium">
+                      Volta Heritage Dance Ensemble · Custodians of Ewe Culture (CNC Affiliate)
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowTermsModal(false)}
+                    className="p-1.5 rounded-lg text-white/60 hover:bg-white/10 transition-colors cursor-pointer"
+                    aria-label="Close modal"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Scrollable Content */}
+              <div className="p-6 overflow-y-auto space-y-6 text-xs text-[#7A6A57] leading-relaxed">
+                {/* Part 1: Liability Waiver */}
+                <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/10 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck size={16} className="text-[var(--color-heritage-gold-dark)]" />
+                    <h4 className="font-bold text-[var(--color-heritage-gold-dark)] font-display text-sm">
+                      Engagement & Liability Waiver
+                    </h4>
+                  </div>
+                  <p className="font-light text-[#1C1208]/90">
+                    Together as one we perform to educate. I agree to engage the <strong>Volta Heritage Dance Ensemble</strong>. 
+                    I shall undertake all exercises at my own risk to satisfy the Ensemble and promise in high esteem to abide by them. 
+                    I verify that my agreement/signature is proof of my intention to execute a complete and unconditional waiver 
+                    and release of all liability to the fullest extent of the laws. I am at least 18 years and above and am mentally competent 
+                    to enter into this agreement.
+                  </p>
+                </div>
+
+                {/* Part 2: Terms and Conditions */}
+                <div className="space-y-4">
+                  <h4 className="font-bold text-sm text-[#1C1208] border-b border-[#E8DDD0] pb-2 font-display">
+                    Terms & Conditions
+                  </h4>
+
+                  <div className="space-y-3 font-light text-[#1C1208]/80">
+                    <div className="flex gap-3">
+                      <span className="w-5 h-5 rounded-full bg-[var(--color-heritage-gold-light)] text-[var(--color-heritage-gold-dark)] flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                        1
+                      </span>
+                      <p>
+                        <strong>Program Details:</strong> You shall give us appropriate time, location and concrete details concerning your program for proper preparations and technical arrangements per your demands.
+                      </p>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <span className="w-5 h-5 rounded-full bg-[var(--color-heritage-gold-light)] text-[var(--color-heritage-gold-dark)] flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                        2
+                      </span>
+                      <p>
+                        <strong>Transportation:</strong> It is your responsibility to provide a safe and convenient source of transport to convey the ensemble TO and FRO unless otherwise agreed.
+                      </p>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <span className="w-5 h-5 rounded-full bg-[var(--color-heritage-gold-light)] text-[var(--color-heritage-gold-dark)] flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                        3
+                      </span>
+                      <p>
+                        <strong>Ground Safety:</strong> The event grounds on which artisans would perform should be well catered and prepared to avoid unexpected injuries or damages.
+                      </p>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <span className="w-5 h-5 rounded-full bg-[var(--color-heritage-gold-light)] text-[var(--color-heritage-gold-dark)] flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                        4
+                      </span>
+                      <p>
+                        <strong>Catering & Changing Rooms:</strong> The group will be first refreshed and offered a convenient dressing room to keep them mentally and physically fit for the performance.
+                      </p>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <span className="w-5 h-5 rounded-full bg-[var(--color-heritage-gold-light)] text-[var(--color-heritage-gold-dark)] flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                        5
+                      </span>
+                      <p>
+                        <strong>Payment Terms:</strong> The group under the leadership will receive at least 50% of the charged amount as agreed or bargained on before start of performance unless otherwise agreed.
+                      </p>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <span className="w-5 h-5 rounded-full bg-[var(--color-heritage-gold-light)] text-[var(--color-heritage-gold-dark)] flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                        6
+                      </span>
+                      <p>
+                        <strong>Performer Packages:</strong> Regardless of your program, the artisan&apos;s food, drink, souvenirs and any other related packages will be reserved based on the number of artisans present.
+                      </p>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <span className="w-5 h-5 rounded-full bg-[var(--color-heritage-gold-light)] text-[var(--color-heritage-gold-dark)] flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                        7
+                      </span>
+                      <p>
+                        <strong>Security Liaison:</strong> You shall provide positive security who will be in communication with the group organizer due to unexpected occurrences.
+                      </p>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <span className="w-5 h-5 rounded-full bg-[var(--color-heritage-gold-light)] text-[var(--color-heritage-gold-dark)] flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                        8
+                      </span>
+                      <p>
+                        <strong>Promotion & Media:</strong> You shall also use your program or event as a medium to advertise as well as promote the group with a humble appeal.
+                      </p>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <span className="w-5 h-5 rounded-full bg-[var(--color-heritage-gold-light)] text-[var(--color-heritage-gold-dark)] flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                        9
+                      </span>
+                      <p>
+                        <strong>Technical Changes:</strong> Any technical changes in regards to your program lined up should be communicated earlier to avoid any inconvenience.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notable box */}
+                <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 space-y-1">
+                  <p className="font-bold uppercase tracking-wider text-[10px]">Important Notice:</p>
+                  <p className="font-light">
+                    Any special request aside agreements will attract extra charges. Failure to abide by any of the above stated terms and conditions may hold you responsible and reported to law enforcement agencies.
+                  </p>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 bg-[#FAF7F2] border-t border-[#E8DDD0] flex justify-between items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-4 py-2 border border-[#E8DDD0] bg-white hover:bg-[#FAF7F2] text-[#1C1208]/75 font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Printer size={13} /> Print
+                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowTermsModal(false)}
+                    className="px-4 py-2 border border-[#E8DDD0] hover:bg-[#FAF7F2] text-[#1C1208]/75 font-bold rounded-xl transition-colors cursor-pointer"
+                  >
+                    Close
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAgreed(true);
+                      setShowTermsModal(false);
+                    }}
+                    className="px-4 py-2 bg-[var(--color-heritage-gold)] hover:bg-[var(--color-heritage-gold-dark)] text-white font-bold rounded-xl shadow-lg shadow-[var(--color-heritage-gold)]/20 transition-all cursor-pointer"
+                  >
+                    I Agree
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

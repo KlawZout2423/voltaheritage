@@ -180,7 +180,11 @@ export function CmsProvider({ children, initialData }: { children: ReactNode, in
     // Only restoring Role from localStorage for demo purposes
     try {
       const storedRole = localStorage.getItem("vhde_cms_role");
-      if (storedRole) setUserRole(storedRole as UserAccount["role"]);
+      if (storedRole) {
+        setTimeout(() => {
+          setUserRole(storedRole as UserAccount["role"]);
+        }, 0);
+      }
     } catch (e) {
       console.error(e);
     }
@@ -208,8 +212,9 @@ export function CmsProvider({ children, initialData }: { children: ReactNode, in
         })
         .catch((err) => console.error("Failed to fetch public CMS data:", err));
     }
-
-    setIsLoaded(true);
+    setTimeout(() => {
+      setIsLoaded(true);
+    }, 0);
   }, [initialData]);
 
   const updateDraft = (updater: (prev: CmsState) => CmsState) => {

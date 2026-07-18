@@ -43,7 +43,6 @@ function InviteModal({ onClose, onAdd }: {
   onAdd: (u: Pick<UserAccount, "name" | "email" | "role">) => void;
 }) {
   const [form, setForm] = useState({ name: "", email: "", role: "editor" as UserAccount["role"] });
-  const rm = roleMeta[form.role];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-sm p-4">
