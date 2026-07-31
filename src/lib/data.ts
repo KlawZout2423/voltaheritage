@@ -86,6 +86,21 @@ export const articles: Article[] = [
 <p>"Our culture is our roots, and our performance is how we educate," Theophilus often reminds us. His vision has carried the ensemble to national stages and international festivals, showcasing the pride and spirit of Ghana's Volta Region.</p>
 <h3>Celebrating the Visionary Leader</h3>
 <p>On this special day, we thank Theophilus for his guidance, his unwavering commitment, and the artistic family he has fostered at Volta Heritage. We wish him abundant health, joy, and continued success as he guides the ensemble to even greater heights.</p>
+<h3>Moments of Cultural Stewardship</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
+  <div class="aspect-portrait rounded-xl overflow-hidden border border-[var(--color-border)]">
+    <img src="/images/WhatsApp Image 2026-07-31 at 02.24.03 (3).jpeg" alt="Theophilus K. Nanevi in traditional attire" class="w-full h-full object-cover object-center" />
+  </div>
+  <div class="aspect-portrait rounded-xl overflow-hidden border border-[var(--color-border)]">
+    <img src="/images/WhatsApp Image 2026-07-31 at 02.24.03.jpeg" alt="Theophilus K. Nanevi drumming" class="w-full h-full object-cover object-[center_20%]" />
+  </div>
+  <div class="aspect-portrait rounded-xl overflow-hidden border border-[var(--color-border)]">
+    <img src="/images/WhatsApp Image 2026-07-31 at 02.24.03 (4).jpeg" alt="Theophilus K. Nanevi at a cultural durbar" class="w-full h-full object-cover object-center" />
+  </div>
+  <div class="aspect-portrait rounded-xl overflow-hidden border border-[var(--color-border)]">
+    <img src="/images/WhatsApp Image 2026-07-31 at 02.24.03 (1).jpeg" alt="Theophilus K. Nanevi drumming close-up" class="w-full h-full object-cover object-center" />
+  </div>
+</div>
 <p><strong>Happy Birthday, Director! May your rhythms continue to beat strong!</strong></p>`,
     thumbnailUrl: "/images/team-theophilus-nanevi.png",
     category: "announcement",

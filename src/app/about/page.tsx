@@ -419,7 +419,14 @@ export default function AboutPage() {
               >
                 <div className="card text-center p-8 bg-white w-full hover:border-[var(--color-heritage-gold)]">
                   <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-5 border-4 border-[var(--color-heritage-gold-light)] relative shadow-md">
-                    <Image src={member.imageUrl} alt={member.name} fill className="object-cover" />
+                    <Image
+                      src={member.imageUrl}
+                      alt={member.name}
+                      fill
+                      className={`object-cover ${
+                        member.imageUrl.includes("theophilus") ? "object-[center_17%]" : ""
+                      }`}
+                    />
                   </div>
                   <h3 className="font-display text-xl font-bold text-[var(--color-text-primary)] mb-1">{member.name}</h3>
                   <p className="text-sm font-semibold text-[var(--color-heritage-gold)] mb-4">{member.title}</p>

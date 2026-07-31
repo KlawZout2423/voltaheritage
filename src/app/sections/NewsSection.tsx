@@ -43,7 +43,15 @@ export default function NewsSection({ articles }: { articles: NewsArticle[] }) {
               <article className={`card flex flex-col bg-white w-full hover:border-[var(--color-heritage-gold)] ${i === 0 ? "card-gold" : ""}`}>
                 <div className="aspect-card relative overflow-hidden rounded-t-xl min-h-[180px]">
                   {article.mediaUrl ? (
-                    <Image src={article.mediaUrl} alt={article.title} fill className="img-cover object-cover" loading="lazy" />
+                    <Image
+                      src={article.mediaUrl}
+                      alt={article.title}
+                      fill
+                      className={`img-cover object-cover ${
+                        article.mediaUrl.includes("theophilus") ? "object-[center_17%]" : ""
+                      }`}
+                      loading="lazy"
+                    />
                   ) : (
                     <div className="w-full h-full bg-neutral-900 flex items-center justify-center text-white">
                       <Video size={28} className="text-[var(--color-heritage-gold)]" />
