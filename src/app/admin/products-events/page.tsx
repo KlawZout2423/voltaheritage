@@ -58,7 +58,7 @@ function ServiceCard({ svc, isReadOnly, onDelete }: { svc: Service; isReadOnly: 
             {cm.label}
           </span>
           <button disabled={isReadOnly} onClick={() => onDelete(svc.id)}
-            className="p-1.5 rounded-lg text-[#C8B99A] hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer disabled:opacity-30 opacity-0 group-hover:opacity-100">
+            className="p-1.5 rounded-lg text-[#C8B99A] hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer disabled:opacity-30 opacity-100 md:opacity-0 md:group-hover:opacity-100">
             <Trash2 size={13} />
           </button>
         </div>
@@ -98,7 +98,7 @@ function EventCard({ evt, isReadOnly, onDelete }: { evt: Event; isReadOnly: bool
           <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${catClass}`}>
             {evt.category}
           </span>
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
             {evt.isFeatured && <Star size={13} className="text-[var(--color-heritage-gold)] fill-[var(--color-heritage-gold)]" />}
             <button disabled={isReadOnly} onClick={() => onDelete(evt.id)}
               className="p-1.5 rounded-lg text-[#C8B99A] hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer disabled:opacity-30">

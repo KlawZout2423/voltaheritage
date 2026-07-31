@@ -49,7 +49,7 @@ function PostCard({ post, isReadOnly, onEdit, onDelete }: { post: BlogPost; isRe
             <span className={`w-1.5 h-1.5 rounded-full ${mm.dot}`} />
             {mm.label}
           </span>
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
             <button disabled={isReadOnly} onClick={onEdit}
               className="p-1.5 rounded-lg text-[#C8B99A] hover:text-[#1C1208] hover:bg-[#FAF7F2] transition-all cursor-pointer">
               <Edit2 size={13} />
@@ -98,40 +98,74 @@ function PostModal({ post, onClose, onSave }: {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleFileUploads = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    if (file.size > 50 * 1024 * 1024) {
-      setUploadError("File size exceeds 50MB limit");
+    const oversized = files.some(file => file.size > 50 * 1024 * 1024);
+    if (oversized) {
+      setUploadError("One or more files exceed the 50MB limit");
       return;
     }
 
     setUploading(true);
     setUploadError(null);
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const base64 = event.target?.result as string;
-      try {
-        const publicUrl = await uploadMediaAction(base64, file.type);
-        setForm((prev) => ({
-          ...prev,
-          mediaUrl: publicUrl,
-          mediaType: file.type.startsWith("video/") ? "cloudinary_video" : "image",
-        }));
-      } catch (err) {
-        const error = err as Error;
-        setUploadError(error.message || "Failed to upload file");
-      } finally {
-        setUploading(false);
+    try {
+      const uploadPromises = files.map((file) => {
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = async (event) => {
+            const base64 = event.target?.result as string;
+            try {
+              const publicUrl = await uploadMediaAction(base64, file.type);
+              resolve(publicUrl);
+            } catch (err) {
+              reject(err);
+            }
+          };
+          reader.onerror = () => reject(new Error("Failed to read file"));
+          reader.readAsDataURL(file);
+        });
+      });
+
+      const urls = await Promise.all(uploadPromises);
+
+      if (urls.length > 0) {
+        const firstUrl = urls[0];
+        const isVideo = files[0].type.startsWith("video/");
+
+        setForm((prev) => {
+          let updatedContent = prev.content || "";
+
+          // If multiple images were uploaded, append the extra images as a gallery grid in HTML!
+          if (urls.length > 1) {
+            const imagesHtml = urls
+              .slice(1)
+              .map(
+                (url) =>
+                  `  <div class="aspect-portrait rounded-xl overflow-hidden border border-[var(--color-border)]">\n    <img src="${url}" class="w-full h-full object-cover object-center" />\n  </div>`
+              )
+              .join("\n");
+
+            const gallerySection = `\n\n<h3>Post Gallery</h3>\n<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">\n${imagesHtml}\n</div>`;
+            updatedContent += gallerySection;
+          }
+
+          return {
+            ...prev,
+            mediaUrl: firstUrl,
+            mediaType: isVideo ? "cloudinary_video" : "image",
+            content: updatedContent,
+          };
+        });
       }
-    };
-    reader.onerror = () => {
-      setUploadError("Failed to read file");
+    } catch (err) {
+      const error = err as Error;
+      setUploadError(error.message || "Failed to upload files");
+    } finally {
       setUploading(false);
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -190,8 +224,9 @@ function PostModal({ post, onClose, onSave }: {
             </span>
             <input
               type="file"
+              multiple={form.mediaType === "image"}
               accept={form.mediaType === "image" ? "image/*" : "video/*"}
-              onChange={handleFileUpload}
+              onChange={handleFileUploads}
               disabled={uploading}
               className="text-[10px] text-[#7A6A57] file:mr-3 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-[var(--color-heritage-gold)] file:text-white hover:file:bg-[var(--color-heritage-gold-dark)] file:cursor-pointer disabled:opacity-50"
             />

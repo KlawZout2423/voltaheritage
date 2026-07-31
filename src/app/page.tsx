@@ -23,10 +23,10 @@ export default function HomePage() {
   } = state;
 
   // ── Articles: prefer CMS blog posts, fall back to static data ──
-  const dbPosts = (state.blogPosts || []).filter((p) => p.isPublished).slice(0, 3);
-  const latestArticles = dbPosts.length > 0
+  const dbPosts = (state.blogPosts || []).filter((p) => p.isPublished);
+  const latestArticles = (dbPosts.length > 0
     ? dbPosts
-    : articles.slice(0, 3).map((a) => ({
+    : articles.map((a) => ({
         id:          a.id,
         title:       a.title,
         content:     a.excerpt,
@@ -34,7 +34,10 @@ export default function HomePage() {
         mediaUrl:    a.thumbnailUrl,
         isPublished: true,
         createdAt:   a.publishedAt,
-      }));
+      }))
+  )
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 3);
 
   // ── Heritage: prefer CMS state, fall back to static data ──
   const heritageData =

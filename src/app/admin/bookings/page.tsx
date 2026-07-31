@@ -338,7 +338,7 @@ export default function AdminBookings() {
                           </button>
                         )}
                         <button onClick={() => setSelected(b)}
-                          className="p-1.5 rounded-lg text-[#A8957E] hover:text-[#1C1208] hover:bg-[#FAF7F2] transition-colors cursor-pointer opacity-0 group-hover:opacity-100">
+                          className="p-1.5 rounded-lg text-[#A8957E] hover:text-[#1C1208] hover:bg-[#FAF7F2] transition-colors cursor-pointer opacity-100 md:opacity-0 md:group-hover:opacity-100">
                           <ChevronRight size={13} />
                         </button>
                       </div>
