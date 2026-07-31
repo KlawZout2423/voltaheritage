@@ -2,8 +2,20 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { Booking, UserAccount, CmsState, BlogPost } from "@/context/CmsContext";
-import { Event, Service, HeritageCategory } from "@/lib/types";
+import { Event, Service, HeritageCategory, GalleryItem } from "@/lib/types";
 import { v2 as cloudinary } from "cloudinary";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+
+interface DbGalleryItem {
+  id: string;
+  type: "photo" | "video";
+  url: string;
+  caption: string;
+  category?: string | null;
+  thumbnail_url?: string | null;
+  storage_path?: string | null;
+  created_at: string;
+}
 
 interface DbBooking {
   id: string;
@@ -149,74 +161,115 @@ function mapBlogPostFromDB(b: DbBlogPost): BlogPost {
   };
 }
 
+function mapGalleryFromDB(g: DbGalleryItem): GalleryItem {
+  return {
+    id: g.id,
+    type: g.type,
+    url: g.url,
+    caption: g.caption || "",
+    category: g.category || undefined,
+    thumbnailUrl: g.thumbnail_url || undefined,
+  };
+}
+
 // ============================================================================
 // DATA FETCHING (Used by AdminLayout to seed context)
 // ============================================================================
 
 export async function getCmsData() {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  // Fetch all required tables
-  const [
-    { data: bookings },
-    { data: events },
-    { data: services },
-    { data: settingsData },
-    { data: users },
-    { data: blogPosts },
-    { data: pillars },
-    { data: items }
-  ] = await Promise.all([
-    supabase.from("bookings").select("*").order("created_at", { ascending: false }),
-    supabase.from("events").select("*").order("date", { ascending: true }),
-    supabase.from("services").select("*").order("created_at", { ascending: true }),
-    supabase.from("cms_settings").select("*").limit(1).maybeSingle(),
-    supabase.from("admin_users").select("*").order("name", { ascending: true }),
-    supabase.from("blog_posts").select("*").order("created_at", { ascending: false }),
-    supabase.from("heritage_pillars").select("*").order("created_at", { ascending: true }),
-    supabase.from("heritage_items").select("*").order("created_at", { ascending: true })
-  ]);
+    // Fetch all required tables
+    const [
+      bookingsResult,
+      eventsResult,
+      servicesResult,
+      settingsResult,
+      usersResult,
+      blogPostsResult,
+      pillarsResult,
+      itemsResult,
+      galleryResult
+    ] = await Promise.all([
+      supabase.from("bookings").select("*").order("created_at", { ascending: false }),
+      supabase.from("events").select("*").order("date", { ascending: true }),
+      supabase.from("services").select("*").order("created_at", { ascending: true }),
+      supabase.from("cms_settings").select("*").limit(1).maybeSingle(),
+      supabase.from("admin_users").select("*").order("name", { ascending: true }),
+      supabase.from("blog_posts").select("*").order("created_at", { ascending: false }),
+      supabase.from("heritage_pillars").select("*").order("created_at", { ascending: true }),
+      supabase.from("heritage_items").select("*").order("created_at", { ascending: true }),
+      supabase.from("gallery").select("*").order("created_at", { ascending: false })
+    ]);
 
-  const mappedPillars: HeritageCategory[] = ((pillars || []) as DbPillar[]).map((p: DbPillar) => {
-    const pillarItems = ((items || []) as DbItem[])
-      .filter((it: DbItem) => it.pillar_id === p.id)
-      .map((it: DbItem) => ({
-        id: it.id,
-        name: it.name,
-        description: it.description,
-        significance: it.significance,
-        imageUrl: it.image_url
-      }));
+    const bookings = bookingsResult.data;
+    const events = eventsResult.data;
+    const services = servicesResult.data;
+    const settingsData = settingsResult.data;
+    const users = usersResult.data;
+    const blogPosts = blogPostsResult.data;
+    const pillars = pillarsResult.data;
+    const items = itemsResult.data;
+    const gallery = galleryResult.data;
+
+    const mappedPillars: HeritageCategory[] = ((pillars || []) as DbPillar[]).map((p: DbPillar) => {
+      const pillarItems = ((items || []) as DbItem[])
+        .filter((it: DbItem) => it.pillar_id === p.id)
+        .map((it: DbItem) => ({
+          id: it.id,
+          name: it.name,
+          description: it.description,
+          significance: it.significance,
+          imageUrl: it.image_url
+        }));
+      return {
+        id: p.id,
+        slug: p.slug,
+        name: p.name,
+        tagline: p.tagline,
+        description: p.description,
+        imageUrl: p.image_url,
+        color: p.color as "gold" | "red" | "green",
+        items: pillarItems
+      };
+    });
+
     return {
-      id: p.id,
-      slug: p.slug,
-      name: p.name,
-      tagline: p.tagline,
-      description: p.description,
-      imageUrl: p.image_url,
-      color: p.color as "gold" | "red" | "green",
-      items: pillarItems
+      bookings: ((bookings || []) as DbBooking[]).map(mapBookingFromDB),
+      events: ((events || []) as DbEvent[]).map(mapEventFromDB),
+      services: ((services || []) as DbService[]).map(mapServiceFromDB),
+      users: ((users || []) as DbUser[]).map(mapUserFromDB),
+      blogPosts: ((blogPosts || []) as DbBlogPost[]).map(mapBlogPostFromDB),
+      gallery: ((gallery || []) as DbGalleryItem[]).map(mapGalleryFromDB),
+      heritageCategories: mappedPillars,
+      settings: settingsData ? {
+        siteTitle: settingsData.site_title,
+        siteDescription: settingsData.site_description,
+        contactEmail: settingsData.contact_email,
+        contactPhone: settingsData.contact_phone,
+        primaryColorAccent: settingsData.primary_color_accent,
+      } : null,
+      heroContent: settingsData?.hero_content || null,
+      sectionsOrder: settingsData?.sections_order || null,
+      sectionVisibility: settingsData?.section_visibility || null,
     };
-  });
-
-  return {
-    bookings: ((bookings || []) as DbBooking[]).map(mapBookingFromDB),
-    events: ((events || []) as DbEvent[]).map(mapEventFromDB),
-    services: ((services || []) as DbService[]).map(mapServiceFromDB),
-    users: ((users || []) as DbUser[]).map(mapUserFromDB),
-    blogPosts: ((blogPosts || []) as DbBlogPost[]).map(mapBlogPostFromDB),
-    heritageCategories: mappedPillars,
-    settings: settingsData ? {
-      siteTitle: settingsData.site_title,
-      siteDescription: settingsData.site_description,
-      contactEmail: settingsData.contact_email,
-      contactPhone: settingsData.contact_phone,
-      primaryColorAccent: settingsData.primary_color_accent,
-    } : null,
-    heroContent: settingsData?.hero_content || null,
-    sectionsOrder: settingsData?.sections_order || null,
-    sectionVisibility: settingsData?.section_visibility || null,
-  };
+  } catch (error) {
+    console.error("Error fetching CMS data from Supabase:", error);
+    return {
+      bookings: [],
+      events: [],
+      services: [],
+      users: [],
+      blogPosts: [],
+      gallery: [],
+      heritageCategories: [],
+      settings: null,
+      heroContent: null,
+      sectionsOrder: null,
+      sectionVisibility: null,
+    };
+  }
 }
 
 // ============================================================================
@@ -509,4 +562,130 @@ export async function deleteHeritageItemAction(id: string) {
   if (error) throw new Error(error.message);
   return { success: true };
 }
+
+export async function upsertGalleryItemAction(item: Partial<GalleryItem> & { id?: string }) {
+  const supabase = await createClient();
+  const payload: Record<string, any> = {
+    type: item.type || "photo",
+    url: item.url,
+    caption: item.caption || "",
+    category: item.category || null,
+    thumbnail_url: item.thumbnailUrl || null,
+  };
+
+  if (item.id && !item.id.startsWith("new-") && !item.id.startsWith("g-")) {
+    payload.id = item.id;
+  }
+
+  const { data, error } = await supabase
+    .from("gallery")
+    .upsert(payload)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapGalleryFromDB(data as DbGalleryItem);
+}
+
+export async function deleteGalleryItemAction(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("gallery").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  return { success: true };
+}
+
+export async function createCmsUserAction(name: string, email: string, role: "admin" | "editor" | "contributor", password: string) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceRoleKey) {
+    throw new Error("Missing Supabase credentials for Admin API");
+  }
+
+  const supabaseAdmin = createSupabaseClient(url, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    }
+  });
+
+  // 1. Create user in Supabase Auth
+  const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: { name }
+  });
+
+  if (authError) {
+    throw new Error(authError.message);
+  }
+
+  const userId = authData.user.id;
+
+  // 2. Insert into public.admin_users
+  const { data: userData, error: dbError } = await supabaseAdmin
+    .from("admin_users")
+    .upsert({
+      id: userId,
+      name,
+      email,
+      role,
+      status: "active"
+    })
+    .select()
+    .single();
+
+  if (dbError) {
+    await supabaseAdmin.auth.admin.deleteUser(userId);
+    throw new Error(dbError.message);
+  }
+
+  return mapUserFromDB(userData);
+}
+
+export async function deleteCmsUserAction(id: string) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceRoleKey) {
+    throw new Error("Missing Supabase credentials for Admin API");
+  }
+
+  const supabaseAdmin = createSupabaseClient(url, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    }
+  });
+
+  // 1. Delete from public.admin_users
+  const { error: dbError } = await supabaseAdmin
+    .from("admin_users")
+    .delete()
+    .eq("id", id);
+
+  if (dbError) throw new Error(dbError.message);
+
+  // 2. Delete from Supabase Auth
+  const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(id);
+  if (authError) {
+    console.error("Auth delete error for user:", id, authError);
+  }
+
+  return { success: true };
+}
+
+export async function updateCmsUserRoleAction(id: string, role: "admin" | "editor" | "contributor") {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("admin_users")
+    .update({ role })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapUserFromDB(data);
+}
+
+
 

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { services as defaultServices, events as defaultEvents, heritageCategories as defaultHeritageCategories } from "@/lib/data";
-import { Service, Event, HeritageCategory, HeritageItem } from "@/lib/types";
+import { services as defaultServices, events as defaultEvents, heritageCategories as defaultHeritageCategories, galleryItems as defaultGalleryItems } from "@/lib/data";
+import { Service, Event, HeritageCategory, HeritageItem, GalleryItem } from "@/lib/types";
 import {
   updateBookingStatusAction,
   deleteBookingAction,
@@ -16,6 +16,11 @@ import {
   upsertHeritagePillarAction,
   upsertHeritageItemAction,
   deleteHeritageItemAction,
+  upsertGalleryItemAction,
+  deleteGalleryItemAction,
+  createCmsUserAction,
+  deleteCmsUserAction,
+  updateCmsUserRoleAction,
   getCmsData,
 } from "@/app/admin/actions/cms";
 
@@ -82,6 +87,7 @@ export interface CmsState {
   users: UserAccount[];
   settings: CmsSettings;
   blogPosts: BlogPost[];
+  gallery: GalleryItem[];
   heritageCategories: HeritageCategory[];
 }
 
@@ -102,6 +108,12 @@ interface CmsContextType {
   addBlogPost: (post: Omit<BlogPost, "id" | "createdAt">) => void;
   deleteBlogPost: (id: string) => void;
   updateBlogPost: (post: BlogPost) => void;
+  addGalleryItem: (item: Omit<GalleryItem, "id">) => Promise<void>;
+  deleteGalleryItem: (id: string) => Promise<void>;
+  updateGalleryItem: (item: GalleryItem) => Promise<void>;
+  addAdminUser: (name: string, email: string, role: UserAccount["role"], password: string) => Promise<void>;
+  deleteAdminUser: (id: string) => Promise<void>;
+  updateAdminUserRole: (id: string, role: UserAccount["role"]) => Promise<void>;
   updateHeritagePillar: (pillar: HeritageCategory) => Promise<void>;
   addHeritageItem: (item: Omit<HeritageItem, "id"> & { pillarId: string }) => Promise<void>;
   updateHeritageItem: (item: HeritageItem & { pillarId: string }) => Promise<void>;
@@ -155,6 +167,7 @@ const initialCmsState: CmsState = {
   users: defaultUsers,
   settings: defaultSettings,
   blogPosts: [],
+  gallery: defaultGalleryItems,
   heritageCategories: defaultHeritageCategories,
 };
 
@@ -417,10 +430,15 @@ export function CmsProvider({ children, initialData }: { children: ReactNode, in
   };
 
   const updateBlogPost = async (post: BlogPost) => {
-    const updater = (prev: CmsState): CmsState => ({
-      ...prev,
-      blogPosts: prev.blogPosts.map((p) => p.id === post.id ? post : p),
-    });
+    const updater = (prev: CmsState): CmsState => {
+      const exists = prev.blogPosts.some((p) => p.id === post.id);
+      return {
+        ...prev,
+        blogPosts: exists
+          ? prev.blogPosts.map((p) => (p.id === post.id ? post : p))
+          : [post, ...prev.blogPosts],
+      };
+    };
     setState(updater);
     setDraftState(updater);
 
@@ -430,6 +448,121 @@ export function CmsProvider({ children, initialData }: { children: ReactNode, in
       console.error("Failed to update blog post", error);
     }
   };
+
+  const addGalleryItem = async (item: Omit<GalleryItem, "id">) => {
+    const tempId = `new-gal-${Date.now()}`;
+    const freshItem: GalleryItem = { ...item, id: tempId };
+    const updater = (prev: CmsState): CmsState => ({
+      ...prev,
+      gallery: [freshItem, ...prev.gallery],
+    });
+    setState(updater);
+    setDraftState(updater);
+
+    try {
+      const dbItem = await upsertGalleryItemAction(freshItem);
+      const swapUpdater = (prev: CmsState): CmsState => ({
+        ...prev,
+        gallery: prev.gallery.map((g) => (g.id === tempId ? dbItem : g)),
+      });
+      setState(swapUpdater);
+      setDraftState(swapUpdater);
+    } catch (error) {
+      console.error("Failed to add gallery item", error);
+    }
+  };
+
+  const deleteGalleryItem = async (id: string) => {
+    const updater = (prev: CmsState): CmsState => ({
+      ...prev,
+      gallery: prev.gallery.filter((g) => g.id !== id),
+    });
+    setState(updater);
+    setDraftState(updater);
+
+    try {
+      await deleteGalleryItemAction(id);
+    } catch (error) {
+      console.error("Failed to delete gallery item", error);
+    }
+  };
+
+  const updateGalleryItem = async (item: GalleryItem) => {
+    const updater = (prev: CmsState): CmsState => ({
+      ...prev,
+      gallery: prev.gallery.map((g) => (g.id === item.id ? item : g)),
+    });
+    setState(updater);
+    setDraftState(updater);
+
+    try {
+      await upsertGalleryItemAction(item);
+    } catch (error) {
+      console.error("Failed to update gallery item", error);
+    }
+  };
+
+  const addAdminUser = async (name: string, email: string, role: UserAccount["role"], password: string) => {
+    const tempId = `new-usr-${Date.now()}`;
+    const freshUser: UserAccount = { id: tempId, name, email, role, status: "active" };
+
+    const updater = (prev: CmsState): CmsState => ({
+      ...prev,
+      users: [...prev.users, freshUser],
+    });
+    setState(updater);
+    setDraftState(updater);
+
+    try {
+      const dbUser = await createCmsUserAction(name, email, role, password);
+      const swapUpdater = (prev: CmsState): CmsState => ({
+        ...prev,
+        users: prev.users.map((u) => (u.id === tempId ? dbUser : u)),
+      });
+      setState(swapUpdater);
+      setDraftState(swapUpdater);
+    } catch (error) {
+      console.error("Failed to create admin user:", error);
+      const revertUpdater = (prev: CmsState): CmsState => ({
+        ...prev,
+        users: prev.users.filter((u) => u.id !== tempId),
+      });
+      setState(revertUpdater);
+      setDraftState(revertUpdater);
+      throw error;
+    }
+  };
+
+  const deleteAdminUser = async (id: string) => {
+    const updater = (prev: CmsState): CmsState => ({
+      ...prev,
+      users: prev.users.filter((u) => u.id !== id),
+    });
+    setState(updater);
+    setDraftState(updater);
+
+    try {
+      await deleteCmsUserAction(id);
+    } catch (error) {
+      console.error("Failed to delete admin user:", error);
+    }
+  };
+
+  const updateAdminUserRole = async (id: string, role: UserAccount["role"]) => {
+    const updater = (prev: CmsState): CmsState => ({
+      ...prev,
+      users: prev.users.map((u) => (u.id === id ? { ...u, role } : u)),
+    });
+    setState(updater);
+    setDraftState(updater);
+
+    try {
+      await updateCmsUserRoleAction(id, role);
+    } catch (error) {
+      console.error("Failed to update user role:", error);
+    }
+  };
+
 
   const updateHeritagePillar = async (pillar: HeritageCategory) => {
     const updater = (prev: CmsState): CmsState => ({
@@ -600,6 +733,12 @@ export function CmsProvider({ children, initialData }: { children: ReactNode, in
         addBlogPost,
         deleteBlogPost,
         updateBlogPost,
+        addGalleryItem,
+        deleteGalleryItem,
+        updateGalleryItem,
+        addAdminUser,
+        deleteAdminUser,
+        updateAdminUserRole,
         updateHeritagePillar,
         addHeritageItem,
         updateHeritageItem,

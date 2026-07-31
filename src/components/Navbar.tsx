@@ -10,9 +10,9 @@ import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 const navLinks = [
   { label: "Home", href: "/", tagline: "Home" },
   {
-    label: "Our Roots",
+    label: "About",
     href: "/about",
-    tagline: "About Us",
+    tagline: "Our Roots",
     children: [
       { label: "Our Story", href: "/about#history" },
       { label: "Mission & Vision", href: "/about#mission" },
@@ -20,9 +20,9 @@ const navLinks = [
     ],
   },
   {
-    label: "Living Archive",
+    label: "Heritage",
     href: "/heritage",
-    tagline: "Ewe Culture",
+    tagline: "Living Archive",
     children: [
       { label: "Traditional Dance", href: "/heritage/dance" },
       { label: "Music & Drumming", href: "/heritage/music" },
@@ -32,11 +32,11 @@ const navLinks = [
       { label: "Traditional Foods", href: "/heritage/foods" },
     ],
   },
-  { label: "In Orbit", href: "/events", tagline: "Events" },
-  { label: "Gallery", href: "/gallery", tagline: "Gallery" },
-  { label: "Offerings", href: "/services", tagline: "Services" },
-  { label: "Blog", href: "/blog", tagline: "Blog" },
-  { label: "Connect", href: "/contact", tagline: "Contact" },
+  { label: "Events",   href: "/events",   tagline: "In Orbit"        },
+  { label: "Gallery",  href: "/gallery",  tagline: "Gallery"         },
+  { label: "Services", href: "/services", tagline: "Offerings"       },
+  { label: "Blog",     href: "/blog",     tagline: "Blue Spotlight"  },
+  { label: "Contact",  href: "/contact",  tagline: "Connect"         },
 ];
 
 export default function Navbar() {
@@ -195,11 +195,11 @@ export default function Navbar() {
                     <AnimatePresence>
                       {activeDropdown === link.label && (
                         <motion.div
-                          initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 6, scale: 0.96 }}
-                          transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                          className="absolute top-full left-0 mt-1 w-52 bg-white rounded-xl shadow-lg border border-[var(--color-border)] py-2 z-50 origin-top-left"
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 8 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute left-0 mt-1 w-48 rounded-xl bg-white border border-[var(--color-border)] py-2 shadow-lg z-50"
                         >
                           {link.children.map((child) => {
                             const isChildActive = pathname === child.href;
@@ -207,9 +207,9 @@ export default function Navbar() {
                               <Link
                                 key={child.href}
                                 href={child.href}
-                                className={`block px-4 py-2 text-sm transition-colors ${
+                                className={`block px-4 py-2 text-xs font-semibold transition-colors ${
                                   isChildActive
-                                    ? "text-[var(--color-heritage-gold)] font-bold bg-[var(--color-bg-secondary)]"
+                                    ? "text-[var(--color-heritage-gold)] bg-[var(--color-bg-secondary)]"
                                     : "text-[var(--color-text-secondary)] hover:text-[var(--color-heritage-gold)] hover:bg-[var(--color-bg-secondary)]"
                                 }`}
                               >

@@ -36,6 +36,10 @@ export default function GalleryContent({ photos, videos }: GalleryContentProps) 
       ? photos
       : photos.filter((photo) => photo.category.toLowerCase() === activeCategory.toLowerCase());
 
+  // Count per category for tab badges
+  const countFor = (cat: string) =>
+    cat === "all" ? photos.length : photos.filter((p) => p.category.toLowerCase() === cat).length;
+
   useEffect(() => {
     if (activePhotoIndex === null) return;
     const handleKeyDown = (e: KeyboardEvent) => {

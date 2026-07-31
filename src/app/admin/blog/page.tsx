@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useCms, BlogPost } from "@/context/CmsContext";
 import { uploadMediaAction } from "@/app/admin/actions/cms";
+import { articles } from "@/lib/data";
 
 // Color maps for different media types
 const mediaMeta = {
@@ -255,6 +256,17 @@ export default function AdminBlogManager() {
           mediaUrl: data.mediaUrl,
           isPublished: data.isPublished,
         });
+      } else {
+        // First-time edit of a static post: save to the DB keeping its original ID
+        updateBlogPost({
+          id: data.id,
+          title: data.title,
+          content: data.content,
+          mediaType: data.mediaType,
+          mediaUrl: data.mediaUrl,
+          isPublished: data.isPublished,
+          createdAt: new Date().toISOString(),
+        });
       }
     } else {
       addBlogPost(data);
@@ -263,7 +275,24 @@ export default function AdminBlogManager() {
     setEditingPost(undefined);
   };
 
-  const posts = state.blogPosts || [];
+  const postsFromDb = state.blogPosts || [];
+
+  // Map static articles to BlogPost interface
+  const staticPostsAsBlogPosts: BlogPost[] = articles.map((art) => ({
+    id: art.id,
+    title: art.title,
+    content: art.excerpt,
+    mediaType: "image" as const,
+    mediaUrl: art.thumbnailUrl,
+    isPublished: true,
+    createdAt: art.publishedAt,
+  }));
+
+  // Merge so database versions override static versions
+  const allPosts = [
+    ...postsFromDb,
+    ...staticPostsAsBlogPosts.filter((sp) => !postsFromDb.some((dp) => dp.id === sp.id))
+  ];
 
   return (
     <div className="space-y-6">
@@ -288,7 +317,7 @@ export default function AdminBlogManager() {
       )}
 
       {/* Grid */}
-      {posts.length === 0 ? (
+      {allPosts.length === 0 ? (
         <div className="bg-white border border-dashed border-[#E8DDD0] rounded-2xl p-16 flex flex-col items-center text-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-[#FAF7F2] border border-[#E8DDD0] flex items-center justify-center text-[#C8B99A]">
             <Video size={22} />
@@ -298,7 +327,7 @@ export default function AdminBlogManager() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {posts.map((post) => (
+          {allPosts.map((post) => (
             <PostCard
               key={post.id}
               post={post}

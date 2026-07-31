@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Video,
   Archive,
+  Image as ImageIcon,
 } from "lucide-react";
 import { useCms } from "@/context/CmsContext";
 import { signOut } from "@/app/admin/auth/actions";
@@ -35,10 +36,10 @@ const navGroups = [
   {
     label: "Content",
     links: [
-      { label: "Content Manager", href: "/admin/content",         icon: FileText },
       { label: "Products & Events", href: "/admin/products-events", icon: CalendarRange },
       { label: "Living Archive",   href: "/admin/heritage",        icon: Archive },
       { label: "Blog & Media",     href: "/admin/blog",            icon: Video },
+      { label: "Media Gallery",     href: "/admin/gallery",         icon: ImageIcon },
     ],
   },
   {

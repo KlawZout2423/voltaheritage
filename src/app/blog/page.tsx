@@ -1,12 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Calendar, Video, FileText, ExternalLink } from "lucide-react";
+import { ArrowRight, Calendar, Video, FileText, ExternalLink, X } from "lucide-react";
 import { useCms, BlogPost } from "@/context/CmsContext";
 import { articles } from "@/lib/data";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 function formatDate(d: string) {
   if (!d) return "";
@@ -23,12 +24,14 @@ function getYouTubeId(url: string) {
   return (match && match[2].length === 11) ? match[2] : null;
 }
 
-function VideoEmbed({ post }: { post: BlogPost }) {
+function VideoEmbed({ post, isFeatured = false }: { post: BlogPost; isFeatured?: boolean }) {
   if (post.mediaType === "youtube" && post.mediaUrl) {
     const ytId = getYouTubeId(post.mediaUrl);
     if (ytId) {
       return (
-        <div className="relative aspect-video w-full overflow-hidden rounded-t-xl bg-black">
+        <div className={`relative aspect-video w-full overflow-hidden bg-black ${
+          isFeatured ? "rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none lg:rounded-br-none h-full" : "rounded-t-xl"
+        }`}>
           <iframe
             src={`https://www.youtube.com/embed/${ytId}`}
             title={post.title}
@@ -44,7 +47,9 @@ function VideoEmbed({ post }: { post: BlogPost }) {
 
   if (post.mediaType === "cloudinary_video" && post.mediaUrl) {
     return (
-      <div className="relative aspect-video w-full overflow-hidden rounded-t-xl bg-black">
+      <div className={`relative aspect-video w-full overflow-hidden bg-black ${
+        isFeatured ? "rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none lg:rounded-br-none h-full" : "rounded-t-xl"
+      }`}>
         <video
           src={post.mediaUrl}
           controls
@@ -57,7 +62,9 @@ function VideoEmbed({ post }: { post: BlogPost }) {
 
   if (post.mediaType === "tiktok" && post.mediaUrl) {
     return (
-      <div className="relative aspect-video w-full overflow-hidden rounded-t-xl bg-neutral-900 flex flex-col items-center justify-center p-6 text-center text-white border-b border-[#E8DDD0]">
+      <div className={`relative aspect-video w-full overflow-hidden bg-neutral-900 flex flex-col items-center justify-center p-6 text-center text-white border-b border-[#E8DDD0] ${
+        isFeatured ? "rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none lg:rounded-br-none h-full" : "rounded-t-xl"
+      }`}>
         <div className="absolute inset-0 opacity-20">
           <div className="w-full h-full bg-gradient-to-tr from-pink-500 to-cyan-500" />
         </div>
@@ -77,13 +84,19 @@ function VideoEmbed({ post }: { post: BlogPost }) {
 
   if (post.mediaUrl) {
     return (
-      <div className="relative h-48 w-full overflow-hidden rounded-t-xl">
+      <div className={`relative overflow-hidden w-full ${
+        isFeatured 
+          ? "h-full min-h-[250px] lg:min-h-[350px] rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none lg:rounded-br-none" 
+          : "h-48 rounded-t-xl"
+      }`}>
         <Image
           src={post.mediaUrl}
           alt={post.title}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="object-cover group-hover:scale-103 transition-transform duration-500"
+          className={`object-cover group-hover:scale-103 transition-transform duration-500 ${
+            post.mediaUrl.includes("theophilus") ? "object-[center_17%]" : ""
+          }`}
           loading="lazy"
         />
       </div>
@@ -91,30 +104,67 @@ function VideoEmbed({ post }: { post: BlogPost }) {
   }
 
   return (
-    <div className="relative h-48 w-full bg-[#FAF7F2] flex items-center justify-center text-[#C8B99A] rounded-t-xl border-b border-[#E8DDD0]">
+    <div className={`relative bg-[#FAF7F2] flex items-center justify-center text-[#C8B99A] border-b border-[#E8DDD0] ${
+      isFeatured 
+        ? "h-full min-h-[250px] lg:min-h-[350px] w-full rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none lg:rounded-br-none" 
+        : "h-48 w-full rounded-t-xl"
+    }`}>
       <FileText size={36} />
     </div>
   );
 }
 
+function stripHtml(html: string) {
+  if (!html) return "";
+  return html.replace(/<[^>]*>/g, "");
+}
+
+function getPostExcerpt(post: BlogPost & { excerpt?: string }) {
+  if (post.excerpt) return post.excerpt;
+  const clean = stripHtml(post.content);
+  if (clean.length <= 150) return clean;
+  return clean.slice(0, 150) + "...";
+}
+
 export default function BlogPage() {
   const { state } = useCms();
+  const [activeFilter, setActiveFilter] = useState<"all" | "articles" | "videos">("all");
+  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
+
   const dbPosts = (state.blogPosts || []).filter((p) => p.isPublished);
 
-  // Fallback to static articles if there are no database blog posts yet
-  const displayPosts: BlogPost[] = dbPosts.length > 0 
-    ? dbPosts 
-    : articles.map((art) => ({
+  // Combine database posts and static articles (overriding static articles with DB versions if ID matches)
+  const displayPosts: (BlogPost & { excerpt?: string })[] = [
+    ...dbPosts,
+    ...articles
+      .filter((art) => !dbPosts.some((p) => p.id === art.id))
+      .map((art) => ({
         id: art.id,
         title: art.title,
-        content: art.excerpt,
+        content: art.content, // full HTML content
+        excerpt: art.excerpt,
         mediaType: "image" as const,
         mediaUrl: art.thumbnailUrl,
         isPublished: true,
         createdAt: art.publishedAt,
-      }));
+      }))
+  ];
 
-  const [featured, ...rest] = displayPosts;
+  // Sort by published date descending
+  displayPosts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  // Filter posts based on tab
+  const filteredPosts = displayPosts.filter((post) => {
+    if (activeFilter === "articles") {
+      return post.mediaType === "image";
+    }
+    if (activeFilter === "videos") {
+      return post.mediaType !== "image";
+    }
+    return true;
+  });
+
+  const [featured, ...rest] = filteredPosts;
 
   return (
     <div className="bg-[var(--color-bg-secondary)] overflow-x-hidden pb-16">
@@ -139,75 +189,219 @@ export default function BlogPage() {
         </div>
       </div>
 
-      {/* ── Featured Article ── */}
-      {featured && (
-        <section className="py-12 bg-white border-b border-[var(--color-border)]">
-          <div className="mx-auto max-w-7xl px-6">
-            <AnimateOnScroll direction="up">
-              <span className="section-eyebrow mb-6 block">Featured Story</span>
-            </AnimateOnScroll>
-            
-            <AnimateOnScroll direction="up" delay={0.1}>
-              <div className="card card-gold overflow-hidden grid grid-cols-1 lg:grid-cols-2 bg-white border border-[#E8DDD0] rounded-2xl hover:border-[var(--color-heritage-gold)]">
-                <div className="relative min-h-[250px] lg:min-h-[350px]">
-                  <VideoEmbed post={featured} />
-                </div>
-                <div className="p-6 lg:p-8 flex flex-col justify-center">
-                  <div className="flex items-center gap-4 text-[10px] text-[var(--color-text-light)] mb-3 font-bold">
-                    <span className="flex items-center gap-1.5">
-                      <Calendar size={11} className="text-[var(--color-heritage-gold)]" />
-                      {formatDate(featured.createdAt)}
-                    </span>
-                  </div>
-                  <h2 className="font-display text-2xl lg:text-3xl font-black text-[var(--color-text-primary)] mb-3 leading-snug">
-                    {featured.title}
-                  </h2>
-                  <p className="text-[var(--color-text-muted)] text-xs leading-relaxed mb-4 font-light whitespace-pre-line">
-                    {featured.content}
-                  </p>
-                </div>
-              </div>
-            </AnimateOnScroll>
+      {/* ── Category Filter Bar ── */}
+      <div className="bg-white border-b border-[var(--color-border)] py-4 sticky top-0 z-30 shadow-sm shrink-0">
+        <div className="mx-auto max-w-7xl px-6 flex items-center justify-between gap-4 overflow-x-auto">
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setActiveFilter("all")}
+              className={`px-4 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${
+                activeFilter === "all"
+                  ? "bg-[var(--color-heritage-gold)] text-white shadow-md shadow-[var(--color-heritage-gold)]/25"
+                  : "bg-[#FAF7F2] text-[#7A6A57] hover:bg-[#FAF7F2]/80 border border-[#E8DDD0]"
+              }`}
+            >
+              All Content
+            </button>
+            <button
+              onClick={() => setActiveFilter("articles")}
+              className={`px-4 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${
+                activeFilter === "articles"
+                  ? "bg-[var(--color-heritage-gold)] text-white shadow-md shadow-[var(--color-heritage-gold)]/25"
+                  : "bg-[#FAF7F2] text-[#7A6A57] hover:bg-[#FAF7F2]/80 border border-[#E8DDD0]"
+              }`}
+            >
+              Articles & News
+            </button>
+            <button
+              onClick={() => setActiveFilter("videos")}
+              className={`px-4 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${
+                activeFilter === "videos"
+                  ? "bg-[var(--color-heritage-gold)] text-white shadow-md shadow-[var(--color-heritage-gold)]/25"
+                  : "bg-[#FAF7F2] text-[#7A6A57] hover:bg-[#FAF7F2]/80 border border-[#E8DDD0]"
+              }`}
+            >
+              Videos & Vlogs
+            </button>
           </div>
-        </section>
-      )}
-
-      {/* ── All Articles ── */}
-      <section className="py-12">
-        <div className="mx-auto max-w-7xl px-6">
-          <AnimateOnScroll direction="up">
-            <span className="section-eyebrow mb-6 block">All Stories</span>
-          </AnimateOnScroll>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {rest.map((post, i) => (
-              <AnimateOnScroll 
-                key={post.id} 
-                direction="up" 
-                delay={i * 0.1}
-                className="flex"
-              >
-                <div className="card flex flex-col bg-white w-full border border-[#E8DDD0] rounded-2xl hover:border-[var(--color-heritage-gold)] transition-colors overflow-hidden">
-                  <VideoEmbed post={post} />
-                  <div className="p-5 flex flex-col flex-1">
-                    <div className="flex items-center gap-3 text-[10px] text-[var(--color-text-light)] mb-2 font-semibold">
-                      <span className="flex items-center gap-1.5">
-                        <Calendar size={11} className="text-[var(--color-heritage-gold)]" /> {formatDate(post.createdAt)}
-                      </span>
-                    </div>
-                    <h2 className="font-display text-base font-bold text-[var(--color-text-primary)] leading-snug mb-2">
-                      {post.title}
-                    </h2>
-                    <p className="text-xs text-[var(--color-text-muted)] leading-relaxed line-clamp-3 mb-4 font-light whitespace-pre-line">
-                      {post.content}
-                    </p>
-                  </div>
-                </div>
-              </AnimateOnScroll>
-            ))}
+          <div className="text-[10px] text-[#A8957E] font-medium hidden sm:block">
+            Showing {filteredPosts.length} post{filteredPosts.length !== 1 && "s"}
           </div>
         </div>
-      </section>
+      </div>
+
+      {filteredPosts.length === 0 ? (
+        <div className="mx-auto max-w-md text-center py-20 px-6">
+          <div className="w-12 h-12 rounded-full bg-[#FAF7F2] flex items-center justify-center text-[var(--color-heritage-gold)] mx-auto mb-4 border border-[#E8DDD0]">
+            <Video size={20} />
+          </div>
+          <h3 className="font-display font-black text-sm text-[#1C1208] mb-1">No posts found</h3>
+          <p className="text-xs text-[#7A6A57] font-light">There are no posts matching this filter right now.</p>
+        </div>
+      ) : (
+        <>
+          {/* ── Featured Article ── */}
+          {featured && (
+            <section className="py-12 bg-white border-b border-[var(--color-border)]">
+              <div className="mx-auto max-w-7xl px-6">
+                <AnimateOnScroll direction="up">
+                  <span className="section-eyebrow mb-6 block">Featured Story</span>
+                </AnimateOnScroll>
+                
+                <AnimateOnScroll direction="up" delay={0.1}>
+                  <div 
+                    onClick={() => setSelectedPost(featured)}
+                    className="card card-gold overflow-hidden grid grid-cols-1 lg:grid-cols-2 bg-white border border-[#E8DDD0] rounded-2xl hover:border-[var(--color-heritage-gold)] cursor-pointer transition-all hover:shadow-lg group"
+                  >
+                    <div className="relative min-h-[250px] lg:min-h-[350px] flex">
+                      <VideoEmbed post={featured} isFeatured={true} />
+                    </div>
+                    <div className="p-6 lg:p-8 flex flex-col justify-center">
+                      <div className="flex items-center gap-4 text-[10px] text-[var(--color-text-light)] mb-3 font-bold">
+                        <span className="flex items-center gap-1.5">
+                          <Calendar size={11} className="text-[var(--color-heritage-gold)]" />
+                          {formatDate(featured.createdAt)}
+                        </span>
+                        <span className="bg-[#FAF7F2] px-2 py-0.5 rounded border border-[#E8DDD0]/55 font-black uppercase text-[8px]">
+                          {featured.mediaType === "image" ? "Article" : "Video"}
+                        </span>
+                      </div>
+                      <h2 className="font-display text-2xl lg:text-3xl font-black text-[var(--color-text-primary)] mb-3 leading-snug group-hover:text-[var(--color-heritage-gold)] transition-colors">
+                        {featured.title}
+                      </h2>
+                      <p className="text-[var(--color-text-muted)] text-xs leading-relaxed mb-6 font-light line-clamp-3">
+                        {getPostExcerpt(featured)}
+                      </p>
+                      <div className="mt-auto pt-3 border-t border-[#FAF7F2] flex items-center justify-between text-[10px] font-bold text-[var(--color-heritage-gold)]">
+                        <span>{featured.mediaType === "image" ? "Read Full Story" : "Watch Video Spotlight"}</span>
+                        <ArrowRight size={12} className="transform group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+                  </div>
+                </AnimateOnScroll>
+              </div>
+            </section>
+          )}
+
+          {/* ── All Articles ── */}
+          {rest.length > 0 && (
+            <section className="py-12">
+              <div className="mx-auto max-w-7xl px-6">
+                <AnimateOnScroll direction="up">
+                  <span className="section-eyebrow mb-6 block">More Updates</span>
+                </AnimateOnScroll>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {rest.map((post, i) => (
+                    <AnimateOnScroll 
+                      key={post.id} 
+                      direction="up" 
+                      delay={i * 0.1}
+                      className="flex"
+                    >
+                      <div 
+                        onClick={() => setSelectedPost(post)}
+                        className="card flex flex-col bg-white w-full border border-[#E8DDD0] rounded-2xl hover:border-[var(--color-heritage-gold)] hover:shadow-lg cursor-pointer transition-all overflow-hidden group"
+                      >
+                        <VideoEmbed post={post} />
+                        <div className="p-5 flex flex-col flex-1">
+                          <div className="flex items-center gap-3 text-[10px] text-[var(--color-text-light)] mb-2 font-semibold">
+                            <span className="flex items-center gap-1.5">
+                              <Calendar size={11} className="text-[var(--color-heritage-gold)]" /> {formatDate(post.createdAt)}
+                            </span>
+                            <span className="bg-[#FAF7F2] px-2 py-0.5 rounded border border-[#E8DDD0]/55 font-black uppercase text-[8px]">
+                              {post.mediaType === "image" ? "Article" : "Video"}
+                            </span>
+                          </div>
+                          <h2 className="font-display text-base font-bold text-[var(--color-text-primary)] leading-snug mb-2 group-hover:text-[var(--color-heritage-gold)] transition-colors">
+                            {post.title}
+                          </h2>
+                          <p className="text-xs text-[var(--color-text-muted)] leading-relaxed line-clamp-3 mb-6 font-light">
+                            {getPostExcerpt(post)}
+                          </p>
+                          <div className="mt-auto pt-3 border-t border-[#FAF7F2] flex items-center justify-between text-[10px] font-bold text-[var(--color-heritage-gold)]">
+                            <span>{post.mediaType === "image" ? "Read Article" : "Watch Vlog"}</span>
+                            <ArrowRight size={12} className="transform group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
+                      </div>
+                    </AnimateOnScroll>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+        </>
+      )}
+
+      {/* ── Reader Modal Overlay ── */}
+      {selectedPost && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fade-in">
+          <div className="bg-white border border-[#E8DDD0] rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-fade-in-up">
+            {/* Header Banner */}
+            <div className="relative h-48 sm:h-72 w-full bg-neutral-950 shrink-0 flex items-center justify-center overflow-hidden">
+              {selectedPost.mediaType === "image" ? (
+                selectedPost.mediaUrl ? (
+                  <Image
+                    src={selectedPost.mediaUrl}
+                    alt={selectedPost.title}
+                    fill
+                    className="object-cover object-[center_17%]"
+                  />
+                ) : (
+                  <div className="text-[var(--color-heritage-gold)] opacity-40"><FileText size={48} /></div>
+                )
+              ) : (
+                <div className="w-full h-full"><VideoEmbed post={selectedPost} isFeatured={true} /></div>
+              )}
+              <button
+                onClick={() => setSelectedPost(null)}
+                className="absolute top-4 right-4 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors z-20 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Title / Meta */}
+            <div className="px-6 sm:px-8 pt-6 pb-4 border-b border-[#E8DDD0] shrink-0">
+              <div className="flex items-center gap-3 text-[10px] text-[var(--color-heritage-gold)] uppercase tracking-wider font-bold mb-2">
+                <span className="flex items-center gap-1">
+                  <Calendar size={11} /> {formatDate(selectedPost.createdAt)}
+                </span>
+                <span>•</span>
+                <span className="bg-[#FAF7F2] px-2 py-0.5 rounded border border-[#E8DDD0]/55 font-black text-[8px]">
+                  {selectedPost.mediaType === "image" ? "Article" : "Video Spotlight"}
+                </span>
+              </div>
+              <h2 className="font-display text-xl sm:text-2xl font-black text-[#1C1208] leading-tight">
+                {selectedPost.title}
+              </h2>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 sm:p-8 overflow-y-auto flex-1 font-light text-xs sm:text-sm text-[#3E3427] leading-relaxed prose max-w-none">
+              {selectedPost.content && (selectedPost.content.includes("<p>") || selectedPost.content.includes("<div")) ? (
+                <div
+                  className="rich-text-content space-y-4"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedPost.content) }}
+                />
+              ) : (
+                <p className="whitespace-pre-line">{selectedPost.content}</p>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 bg-[#FAF7F2] border-t border-[#E8DDD0] shrink-0 flex justify-end">
+              <button
+                onClick={() => setSelectedPost(null)}
+                className="btn-primary text-xs px-5 py-2.5 rounded-xl shadow-lg cursor-pointer"
+              >
+                Close Reader
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── CTA ── */}
       <section className="py-12 bg-[var(--color-bg-tertiary)] border-t border-[var(--color-border)] rounded-2xl mx-6">

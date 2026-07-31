@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Mail, X, ShieldCheck, ShieldAlert, Eye, AlertTriangle, UserPlus } from "lucide-react";
+import { Plus, Mail, X, ShieldCheck, ShieldAlert, Eye, EyeOff, AlertTriangle, UserPlus } from "lucide-react";
 import { useCms, UserAccount } from "@/context/CmsContext";
 
 // ── Role config ────────────────────────────────────────────────
@@ -40,9 +40,12 @@ function getInitials(name: string) {
 // ── Invite User Modal ──────────────────────────────────────────
 function InviteModal({ onClose, onAdd }: {
   onClose: () => void;
-  onAdd: (u: Pick<UserAccount, "name" | "email" | "role">) => void;
+  onAdd: (u: Pick<UserAccount, "name" | "email" | "role"> & { password?: string }) => void;
 }) {
-  const [form, setForm] = useState({ name: "", email: "", role: "editor" as UserAccount["role"] });
+  const [form, setForm] = useState({ name: "", email: "", role: "editor" as UserAccount["role"], password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [pwError, setPwError] = useState("");
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-sm p-4">
@@ -52,12 +55,23 @@ function InviteModal({ onClose, onAdd }: {
             <div className="w-8 h-8 rounded-lg bg-[var(--color-heritage-gold-light)] flex items-center justify-center text-[var(--color-heritage-gold-dark)]">
               <UserPlus size={16} />
             </div>
-            <h3 className="font-display font-black text-lg text-[#1C1208]">Invite Team Member</h3>
+            <h3 className="font-display font-black text-lg text-[#1C1208]">Create Admin User</h3>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg text-[#7A6A57] hover:bg-[#FAF7F2] transition-colors cursor-pointer"><X size={16} /></button>
         </div>
 
-        <form onSubmit={(e) => { e.preventDefault(); onAdd(form); }} className="p-6 space-y-5 text-xs">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (form.password !== confirmPassword) {
+              setPwError("Passwords do not match!");
+              return;
+            }
+            setPwError("");
+            onAdd(form);
+          }}
+          className="p-6 space-y-5 text-xs"
+        >
           <div className="space-y-1.5">
             <label className="text-[10px] font-black uppercase tracking-widest text-[#7A6A57]">Full Name *</label>
             <input required type="text" placeholder="e.g. Kofi Acheampong" className="form-input text-xs"
@@ -68,6 +82,49 @@ function InviteModal({ onClose, onAdd }: {
             <label className="text-[10px] font-black uppercase tracking-widest text-[#7A6A57]">Email Address *</label>
             <input required type="email" placeholder="e.g. kofi@voltaheritage.art" className="form-input text-xs"
               value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black uppercase tracking-widest text-[#7A6A57]">Password *</label>
+            <div className="relative">
+              <input
+                required
+                type={showPassword ? "text" : "password"}
+                minLength={6}
+                placeholder="Enter password (minimum 6 characters)"
+                className="form-input text-xs pr-10"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#7A6A57] hover:text-[#1C1208] cursor-pointer"
+              >
+                {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black uppercase tracking-widest text-[#7A6A57]">Confirm Password *</label>
+            <input
+              required
+              type={showPassword ? "text" : "password"}
+              minLength={6}
+              placeholder="Re-enter password to confirm"
+              className="form-input text-xs"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (pwError) setPwError("");
+              }}
+            />
+            {pwError && (
+              <p className="text-[10px] text-red-500 font-bold mt-1">
+                {pwError}
+              </p>
+            )}
           </div>
 
           {/* Role picker */}
@@ -101,7 +158,7 @@ function InviteModal({ onClose, onAdd }: {
           <div className="flex justify-end gap-2 pt-2 border-t border-[#E8DDD0]">
             <button type="button" onClick={onClose} className="btn-outline text-xs px-4 py-2 rounded-xl cursor-pointer">Cancel</button>
             <button type="submit" className="btn-primary text-xs px-4 py-2 rounded-xl shadow-lg cursor-pointer flex items-center gap-1.5">
-              <UserPlus size={13} /> Send Invite
+              <UserPlus size={13} /> Create User
             </button>
           </div>
         </form>
@@ -112,32 +169,45 @@ function InviteModal({ onClose, onAdd }: {
 
 // ── Main Page ──────────────────────────────────────────────────
 export default function AdminUsers() {
-  const { state, updateDraft, publishState, currentUser, setCurrentUserRole } = useCms();
+  const { state, addAdminUser, deleteAdminUser, updateAdminUserRole, currentUser, setCurrentUserRole } = useCms();
   const [modalOpen, setModalOpen] = useState(false);
 
   const isReadOnly = currentUser.role === "contributor";
   const users = state.users;
 
-  const handleRoleChange = (userId: string, role: UserAccount["role"]) => {
+  const handleRoleChange = async (userId: string, role: UserAccount["role"]) => {
     if (isReadOnly) return;
-    updateDraft((p) => ({ ...p, users: p.users.map((u) => u.id === userId ? { ...u, role } : u) }));
-    publishState();
-    if (userId === currentUser.id) setCurrentUserRole(role);
+    try {
+      await updateAdminUserRole(userId, role);
+      if (userId === currentUser.id) setCurrentUserRole(role);
+    } catch (error) {
+      alert("Failed to update user role.");
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (isReadOnly) return;
     if (id === currentUser.id) { alert("You cannot remove your own account."); return; }
-    if (!confirm("Remove this user's administrative access?")) return;
-    updateDraft((p) => ({ ...p, users: p.users.filter((u) => u.id !== id) }));
-    publishState();
+    if (!confirm("Remove this user's administrative access and delete their login?")) return;
+    try {
+      await deleteAdminUser(id);
+    } catch (error) {
+      alert("Failed to revoke access.");
+    }
   };
 
-  const handleAdd = (data: Pick<UserAccount, "name" | "email" | "role">) => {
-    const fresh: UserAccount = { id: `usr-${Date.now()}`, status: "invited", ...data };
-    updateDraft((p) => ({ ...p, users: [...p.users, fresh] }));
-    publishState();
-    setModalOpen(false);
+  const handleAdd = async (data: Pick<UserAccount, "name" | "email" | "role"> & { password?: string }) => {
+    if (!data.password) {
+      alert("Password is required.");
+      return;
+    }
+    try {
+      await addAdminUser(data.name, data.email, data.role, data.password);
+      setModalOpen(false);
+    } catch (error) {
+      const err = error as Error;
+      alert(`Failed to create user: ${err.message}`);
+    }
   };
 
   return (
@@ -152,7 +222,7 @@ export default function AdminUsers() {
         </div>
         <button disabled={isReadOnly} onClick={() => setModalOpen(true)}
           className="btn-primary flex items-center gap-1.5 text-xs py-2.5 px-4 rounded-xl disabled:opacity-50 cursor-pointer shrink-0">
-          <Plus size={14} /> Invite User
+          <Plus size={14} /> Create User
         </button>
       </div>
 

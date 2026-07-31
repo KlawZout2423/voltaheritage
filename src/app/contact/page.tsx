@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Mail, Phone, Send, CheckCircle, ShieldCheck, Star, X, Printer } from "lucide-react";
+import { MapPin, Mail, Phone, Send, CheckCircle, ShieldCheck, X, Printer } from "lucide-react";
 import { institution } from "@/lib/data";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import { useCms } from "@/context/CmsContext";
@@ -28,18 +28,6 @@ const inputVariants = {
   },
 };
 
-const testimonials = [
-  {
-    quote: "Volta Heritage brought electric energy to our festival. Extremely professional and culturally authentic!",
-    author: "K. Addo, Event Coordinator",
-    stars: 5,
-  },
-  {
-    quote: "The drumming and dance workshops were a masterclass in Ewe culture. Our students loved every second.",
-    author: "Dr. F. Mensah, Volta School District",
-    stars: 5,
-  },
-];
 
 export default function ContactPage() {
   const { addBooking } = useCms();
@@ -223,27 +211,7 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* Testimonials */}
-              <div className="pt-6 border-t border-[var(--color-border)] space-y-4">
-                <p className="text-xs font-bold text-[var(--color-text-secondary)] uppercase tracking-widest">
-                  Client Experiences
-                </p>
-                {testimonials.map((test, i) => (
-                  <div key={i} className="p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] space-y-2">
-                    <div className="flex text-amber-500 gap-0.5">
-                      {[...Array(test.stars)].map((_, idx) => (
-                        <Star key={idx} size={13} fill="currentColor" />
-                      ))}
-                    </div>
-                    <p className="text-xs italic text-[var(--color-text-muted)] font-light leading-relaxed">
-                      &ldquo;{test.quote}&rdquo;
-                    </p>
-                    <p className="text-[10px] font-bold text-[var(--color-text-secondary)]">
-                      — {test.author}
-                    </p>
-                  </div>
-                ))}
-              </div>
+
             </AnimateOnScroll>
           </div>
 

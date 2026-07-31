@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { getCmsData } from "@/app/admin/actions/cms";
 import { galleryItems } from "@/lib/data";
 import GalleryContent from "./GalleryContent";
 
@@ -79,20 +80,89 @@ const rawPhotos = [
   { src: "/images/WhatsApp Image 2026-06-02 at 16.33.30.jpeg",      caption: "VHDE logo",                     category: "heritage"     },
 ];
 
-// Interleave first-half and second-half of the list so images
-// from different aspect-ratio groups are distributed evenly.
-const mid = Math.ceil(rawPhotos.length / 2);
-const realPhotos = rawPhotos.reduce<typeof rawPhotos>((acc, _, i, arr) => {
-  if (i < mid) {
-    acc.push(arr[i]);
-    if (arr[i + mid]) acc.push(arr[i + mid]);
+export default async function GalleryPage() {
+  // Fetch dynamic database records
+  const cmsData = await getCmsData();
+  const dbGallery = cmsData.gallery || [];
+
+  let dynamicPhotos: typeof rawPhotos = [];
+  try {
+    const fs = require("fs");
+    const path = require("path");
+    const imagesDir = path.join(process.cwd(), "public", "images");
+    if (fs.existsSync(imagesDir)) {
+      const files = fs.readdirSync(imagesDir);
+      // Filter for files starting with "WhatsApp Image 2026-07-31"
+      const newImageFiles = files.filter((f: string) => 
+        f.startsWith("WhatsApp Image 2026-07-31") && 
+        (f.endsWith(".jpeg") || f.endsWith(".jpg") || f.endsWith(".png"))
+      );
+
+      // Sort naturally so files display in ordered fashion
+      newImageFiles.sort((a: string, b: string) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+
+      const categories = ["performance", "festival", "workshop", "heritage"];
+      const captions = [
+        "Traditional drumming dialogue",
+        "Ensemble cultural showcase",
+        "Vibrant traditional choreography",
+        "Ancestral rhythms in Ho",
+        "Ewe heritage preservation",
+        "Dance instruction workshop",
+        "Community festival performance",
+        "Authentic drumming circle",
+      ];
+
+      dynamicPhotos = newImageFiles.map((filename: string, idx: number) => {
+        const category = categories[idx % categories.length];
+        const caption = captions[idx % captions.length];
+        return {
+          src: `/images/${filename}`,
+          caption: `${caption} — Volta Heritage Ensemble`,
+          category: category,
+        };
+      });
+    }
+  } catch (error) {
+    console.error("Failed to read dynamic images:", error);
   }
-  return acc;
-}, []);
 
-const videos = galleryItems.filter((g) => g.type === "video");
+  // Map database photo items
+  const dbPhotos = dbGallery
+    .filter((item) => item.type === "photo")
+    .map((item) => ({
+      src: item.url,
+      caption: item.caption,
+      category: item.category || "performance",
+    }));
 
-export default function GalleryPage() {
+  // Combine database photos and static photos (filtering out duplicates by URL/src)
+  const staticAndDynamicPhotos = [...rawPhotos, ...dynamicPhotos];
+  const allPhotos = [
+    ...dbPhotos,
+    ...staticAndDynamicPhotos.filter((sp) => !dbPhotos.some((dp) => dp.src === sp.src))
+  ];
+
+  // Interleave photos for grid view
+  const mid = Math.ceil(allPhotos.length / 2);
+  const realPhotos = allPhotos.reduce<typeof allPhotos>((acc, _, i, arr) => {
+    if (i < mid) {
+      acc.push(arr[i]);
+      if (arr[i + mid]) acc.push(arr[i + mid]);
+    }
+    return acc;
+  }, []);
+
+  // Map database video items
+  const dbVideos = dbGallery.filter((item) => item.type === "video");
+
+  // Combine static and database videos (filtering out duplicates by URL)
+  const staticVideos = galleryItems.filter((g) => g.type === "video");
+  const allVideos = [
+    ...dbVideos,
+    ...staticVideos.filter((sv) => !dbVideos.some((dv) => dv.url === sv.url))
+  ];
+
   return (
     <div className="bg-[var(--color-bg-secondary)]">
 
@@ -124,7 +194,7 @@ export default function GalleryPage() {
       </div>
 
       {/* ── Client Content (Interactive photo grid & filters) ── */}
-      <GalleryContent photos={realPhotos} videos={videos} />
+      <GalleryContent photos={realPhotos} videos={allVideos} />
 
       {/* ── CTA ── */}
       <section className="py-16 bg-[var(--color-bg-tertiary)] border-t border-[var(--color-border)]">

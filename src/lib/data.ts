@@ -74,6 +74,25 @@ export const events: Event[] = [
 // ─────────────────────────────────────────────────────────────
 export const articles: Article[] = [
   {
+    id: "art-founder-birthday",
+    title: "Celebrating Our Visionary Founder: Happy Birthday to Theophilus K. Nanevi!",
+    slug: "celebrating-our-visionary-founder-theophilus-k-nanevi",
+    excerpt:
+      "On the occasion of our founder's birthday, the Volta Heritage Dance Ensemble celebrates the leadership, passion, and cultural vision of Theophilus K. Nanevi.",
+    content: `<p>Today, the entire Volta Heritage Dance Ensemble family joins in celebration of the birthday of our visionary Founder and Chief Executive Officer, <strong>Theophilus K. Nanevi</strong>. As a dedicated lecturer of traditional creative dance and drumming, and the heart behind the ensemble's journey, Theophilus has spent decades preserving and sharing the rich cultural heritage of the Ewe people with the world.</p>
+<p>Under his leadership, Volta Heritage has transformed from a local group into a globally recognized living archive for the performing arts of the Volta Region. His deep commitment to the ancestral stories, complex rhythms, and traditional dances has inspired generations of performers and cultural enthusiasts.</p>
+<h3>A Legacy of Cultural Preservation</h3>
+<p>For Theophilus, traditional performing arts are more than just entertainment; they are a sacred historical record. Through his lecture work and artistic leadership, he has ensured that ancient dances like the <em>Agbadza</em>, <em>Husago</em>, and <em>Borborbor</em> remain vital and authentic, preserving the precise physical vocabulary and rhythmic language of our ancestors.</p>
+<p>"Our culture is our roots, and our performance is how we educate," Theophilus often reminds us. His vision has carried the ensemble to national stages and international festivals, showcasing the pride and spirit of Ghana's Volta Region.</p>
+<h3>Celebrating the Visionary Leader</h3>
+<p>On this special day, we thank Theophilus for his guidance, his unwavering commitment, and the artistic family he has fostered at Volta Heritage. We wish him abundant health, joy, and continued success as he guides the ensemble to even greater heights.</p>
+<p><strong>Happy Birthday, Director! May your rhythms continue to beat strong!</strong></p>`,
+    thumbnailUrl: "/images/team-theophilus-nanevi.png",
+    category: "announcement",
+    publishedAt: "2026-08-01",
+    author: "VHDE Communications",
+  },
+  {
     id: "art-1",
     title: "Volta Heritage Dance Ensemble Performs at International Arts Festival",
     slug: "vhde-international-arts-festival-2026",

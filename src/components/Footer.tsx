@@ -16,12 +16,12 @@ const heritageLinks = [
 ];
 
 const quickLinks = [
-  { label: "Our Roots (About Us)", href: "/about" },
-  { label: "In Orbit (Upcoming Events)", href: "/events" },
-  { label: "Gallery (Photos & Videos)", href: "/gallery" },
-  { label: "Offerings (Our Services)", href: "/services" },
-  { label: "Our Blog & Vlog", href: "/blog" },
-  { label: "Connect (Contact & Book)", href: "/contact" },
+  { label: "About Us",        href: "/about"    },
+  { label: "Upcoming Events", href: "/events"   },
+  { label: "Gallery",         href: "/gallery"  },
+  { label: "Services",        href: "/services" },
+  { label: "Blog & Vlog",     href: "/blog"     },
+  { label: "Contact & Book",  href: "/contact"  },
 ];
 
 export default function Footer() {
